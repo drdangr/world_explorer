@@ -7,7 +7,7 @@
       "atmosphere": "юмор, абсурд, ирония, сарказм, английская литература",
       "genre": "фентези, детектив, приключения",
       "createdAt": "2025-11-06T17:53:45.314Z",
-      "updatedAt": "2025-11-06T19:48:22.017Z",
+      "updatedAt": "2025-11-06T20:56:09.938Z",
       "entryLocationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
       "graph": {
         "b77f6f1e-4b11-49ad-ab85-c753181de6b9": {
@@ -20,7 +20,7 @@
             {
               "id": "ff785040-de07-46f5-9bc8-b6eb0021c58a",
               "targetId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
-              "label": "Вернуться внутрь",
+              "label": "отправиться в",
               "bidirectional": true
             }
           ]
@@ -35,19 +35,19 @@
             {
               "id": "2f683b71-d2e2-463a-af54-ce47b370b632",
               "targetId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
-              "label": "Вернуться внутрь",
+              "label": "отправиться в",
               "bidirectional": true
             },
             {
               "id": "9a7b4c12-59bd-403f-9cc3-8ebc21f445c8",
               "targetId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
-              "label": "Вернуться внутрь",
+              "label": "отправиться в",
               "bidirectional": true
             },
             {
               "id": "1cde2cf8-7f03-495e-92d7-4466a864ebf9",
               "targetId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
-              "label": "Вернуться на улицу",
+              "label": "отправиться в",
               "bidirectional": true
             }
           ]
@@ -62,13 +62,13 @@
             {
               "id": "4fe357af-05d3-48a9-ae70-fae2d44146ba",
               "targetId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
-              "label": "Вернуться внутрь",
+              "label": "отправиться в",
               "bidirectional": true
             },
             {
               "id": "b5b9b533-5855-4ff4-bdb6-49a61538ae85",
               "targetId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
-              "label": "Вернуться на улицу",
+              "label": "отправиться в",
               "bidirectional": true
             }
           ]
@@ -83,19 +83,19 @@
             {
               "id": "20b8b18f-a59a-4535-93d1-8e401d663e61",
               "targetId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
-              "label": "Вернуться на улицу",
+              "label": "отправиться в",
               "bidirectional": true
             },
             {
               "id": "b2e1fce6-d109-4180-98ab-5d0d7e455c1f",
               "targetId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
-              "label": "Вернуться на улицу",
+              "label": "отправиться в",
               "bidirectional": true
             },
             {
               "id": "35f94563-9302-491d-8f9e-63c853566cb3",
               "targetId": "5a848726-d2e0-45cd-b998-6bb498314316",
-              "label": "В переулок",
+              "label": "отправиться в",
               "bidirectional": true
             }
           ]
@@ -118,7 +118,7 @@
             {
               "id": "0f1164ef-39e5-4654-82a1-29024003bae5",
               "targetId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
-              "label": "В переулок",
+              "label": "отправиться в",
               "bidirectional": true
             }
           ]

@@ -6,7 +6,7 @@
       "description": "сотрудник Ночной Стражи, детектив, оборотень",
       "inventory": [],
       "currentWorldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
-      "currentLocationId": "5a848726-d2e0-45cd-b998-6bb498314316",
+      "currentLocationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
       "history": [
         {
           "id": "02ce5531-8530-4a78-ad40-0959fc774561",
@@ -559,6 +559,774 @@
           "author": "gm",
           "message": "Во дворе пахнет травами и серой, на верёвке сушатся пучки неизвестных растений. Дверь в лавку чуть приоткрыта.",
           "createdAt": "2025-11-06T19:48:22.017Z"
+        },
+        {
+          "id": "20a8b9cf-2611-4287-b455-991b2130373e",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "5a848726-d2e0-45cd-b998-6bb498314316",
+          "author": "player",
+          "message": "оглядеться",
+          "createdAt": "2025-11-06T19:58:46.680Z"
+        },
+        {
+          "id": "0c2f4f1b-9c62-4330-95f9-75c4d5faa585",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "5a848726-d2e0-45cd-b998-6bb498314316",
+          "author": "gm",
+          "message": "Во дворе пахнет травами и серой, на верёвке сушатся пучки неизвестных растений. Дверь в лавку чуть приоткрыта. (оглядеться)",
+          "createdAt": "2025-11-06T19:58:46.680Z"
+        },
+        {
+          "id": "0cbe0497-4df4-4b06-89ee-751eaaa66845",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "5a848726-d2e0-45cd-b998-6bb498314316",
+          "author": "player",
+          "message": "Пойти: Тёмный переулок",
+          "createdAt": "2025-11-06T19:58:53.084Z"
+        },
+        {
+          "id": "96414e16-7336-48ef-9de8-2e16f7283f74",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "gm",
+          "message": "Я замечаю узкий переулок, уходящий в темноту. В лужах отражается неоновый отблеск вывесок, а где-то внутри слышится шорох.",
+          "createdAt": "2025-11-06T19:58:53.084Z"
+        },
+        {
+          "id": "f9a99cea-afb5-46fa-a0b2-dd45e9515938",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "player",
+          "message": "Пойти: Улица у входа",
+          "createdAt": "2025-11-06T19:59:01.571Z"
+        },
+        {
+          "id": "87435368-aa75-4e5f-b996-6b4a942fd4cf",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T19:59:01.571Z"
+        },
+        {
+          "id": "6fad028a-36cb-4f15-90f3-c2b1a522a650",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "Подойти к лавке",
+          "createdAt": "2025-11-06T19:59:18.134Z"
+        },
+        {
+          "id": "c0407b95-9aee-431d-8aa6-8631f648ea41",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света. (Подойти к лавке)",
+          "createdAt": "2025-11-06T19:59:18.134Z"
+        },
+        {
+          "id": "f720220c-0550-43f7-be2d-cd7e86c1dab8",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "Пойти: Улица у входа",
+          "createdAt": "2025-11-06T19:59:26.826Z"
+        },
+        {
+          "id": "179f52d7-6203-40a3-83e9-e8ac39f78590",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T19:59:26.826Z"
+        },
+        {
+          "id": "fa845f84-cfc6-455b-9e7b-1864015ff950",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Вернуться в помещение",
+          "createdAt": "2025-11-06T19:59:35.519Z"
+        },
+        {
+          "id": "23d8896f-9c8c-4bb8-8c69-7fb8e2d01a57",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Вернуться в помещение)",
+          "createdAt": "2025-11-06T19:59:35.519Z"
+        },
+        {
+          "id": "0fb34195-5e50-4c29-8562-111b8879d4c3",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Пойти: Улица за чёрным ходом",
+          "createdAt": "2025-11-06T19:59:42.748Z"
+        },
+        {
+          "id": "bbe16ca3-df39-4ac6-beb2-8cc6cad7c38b",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T19:59:42.748Z"
+        },
+        {
+          "id": "72f94e1d-afe9-43ff-9276-50bb3d620ab0",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "Вернуться в помещение",
+          "createdAt": "2025-11-06T19:59:48.614Z"
+        },
+        {
+          "id": "a9348a4d-ccaa-40ae-ac0b-679a9ea2f060",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света. (Вернуться в помещение)",
+          "createdAt": "2025-11-06T19:59:48.614Z"
+        },
+        {
+          "id": "89c53a82-93b5-4f1f-a528-0df038dd97b0",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "jukzltnmcz",
+          "createdAt": "2025-11-06T20:42:00.803Z"
+        },
+        {
+          "id": "c1cdf661-91bf-45ff-a05b-49b3666cb238",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света. (jukzltnmcz)",
+          "createdAt": "2025-11-06T20:42:00.803Z"
+        },
+        {
+          "id": "b6f3baca-56bb-4ca2-8161-1615f18548cc",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:42:11.530Z"
+        },
+        {
+          "id": "9d6a3e3a-c516-47c5-a367-9c6880baee73",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:42:11.530Z"
+        },
+        {
+          "id": "ce94c2f2-fdeb-4770-be8c-5c4063d78c4c",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "отправиться в Улица за чёрным ходом",
+          "createdAt": "2025-11-06T20:42:17.726Z"
+        },
+        {
+          "id": "55444b77-ac28-40f5-87f4-f9c7a0540206",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:42:17.726Z"
+        },
+        {
+          "id": "8283af56-5827-4c07-a94e-009686008126",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "отправиться в Тёмный переулок",
+          "createdAt": "2025-11-06T20:42:22.225Z"
+        },
+        {
+          "id": "5dd29d51-919a-4b0a-bcd4-e94ba4694784",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:42:22.225Z"
+        },
+        {
+          "id": "74c21eba-3682-4c9a-96b0-ec711adf50f6",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "отправиться в Центральная локация",
+          "createdAt": "2025-11-06T20:42:27.758Z"
+        },
+        {
+          "id": "606fdfb6-97b1-4eca-b71f-c2dd9d31f4b9",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "gm",
+          "message": "Я осматриваюсь: юмор, абсурд, ирония, сарказм, английская литература, по мотивам серии книг терри пратчета \"плоский мир\": бар на окраине анкморпорка, любимый бак троллей и фентези, детектив, приключения сразу же ощущаются в воздухе.",
+          "createdAt": "2025-11-06T20:42:27.758Z"
+        },
+        {
+          "id": "b944af1e-d97a-4db0-b222-4ab127f8138f",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:42:32.462Z"
+        },
+        {
+          "id": "551a979a-9779-411b-ad7a-1013e9eea44f",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:42:32.462Z"
+        },
+        {
+          "id": "580b3b40-3475-49de-85e9-60e4e61706c8",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Подойти к лавке",
+          "createdAt": "2025-11-06T20:42:41.982Z"
+        },
+        {
+          "id": "72970031-6e9c-4eaf-9bbd-9b5487e661c7",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Подойти к лавке)",
+          "createdAt": "2025-11-06T20:42:41.982Z"
+        },
+        {
+          "id": "233e7eba-4436-4141-9b37-a1f5ebf71ce3",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "отправиться в Улица за чёрным ходом",
+          "createdAt": "2025-11-06T20:42:53.008Z"
+        },
+        {
+          "id": "d175e6cb-059e-4cff-8d5e-9cef81c6bc0a",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:42:53.008Z"
+        },
+        {
+          "id": "c69630ab-99af-4e85-89b2-0336d03fabd5",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:42:59.512Z"
+        },
+        {
+          "id": "95f3df82-7807-4ddc-aa2a-cb0b9e9ed8fc",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:42:59.512Z"
+        },
+        {
+          "id": "55bd2d32-c56b-429b-8e6c-bce500a7656d",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "отправиться в Тёмный переулок",
+          "createdAt": "2025-11-06T20:43:07.327Z"
+        },
+        {
+          "id": "e477707f-2fc6-4e42-8f02-578e0efc9684",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "gm",
+          "message": "Я осматриваюсь: юмор, абсурд, ирония, сарказм, английская литература, по мотивам серии книг терри пратчета \"плоский мир\": бар на окраине анкморпорка, любимый бак троллей и фентези, детектив, приключения сразу же ощущаются в воздухе.",
+          "createdAt": "2025-11-06T20:43:07.327Z"
+        },
+        {
+          "id": "a6edcb52-7798-49db-bb49-f5ea0429add7",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:43:10.957Z"
+        },
+        {
+          "id": "56f64fce-5dc5-4481-b3f9-230a628fea44",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:43:10.957Z"
+        },
+        {
+          "id": "c52af44a-7d71-4487-b4ab-5ec559147c70",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "отправиться в Тёмный переулок",
+          "createdAt": "2025-11-06T20:43:15.140Z"
+        },
+        {
+          "id": "fa94100d-399b-4326-9d4b-aca272b5d62f",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "gm",
+          "message": "Я осматриваюсь: юмор, абсурд, ирония, сарказм, английская литература, по мотивам серии книг терри пратчета \"плоский мир\": бар на окраине анкморпорка, любимый бак троллей и фентези, детектив, приключения сразу же ощущаются в воздухе.",
+          "createdAt": "2025-11-06T20:43:15.140Z"
+        },
+        {
+          "id": "18e9aa99-955f-43e4-b153-13120176de92",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:44:00.704Z"
+        },
+        {
+          "id": "2f0c0e38-8e51-47a2-989b-0aa222c7e3cc",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:44:00.704Z"
+        },
+        {
+          "id": "3182b288-4c02-4c8f-a8fe-2ab070f781c7",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "отправиться в Тёмный переулок",
+          "createdAt": "2025-11-06T20:44:08.325Z"
+        },
+        {
+          "id": "4f7c6479-8f82-4db3-bfb5-d0fbbb119f3c",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "gm",
+          "message": "Я осматриваюсь: юмор, абсурд, ирония, сарказм, английская литература, по мотивам серии книг терри пратчета \"плоский мир\": бар на окраине анкморпорка, любимый бак троллей и фентези, детектив, приключения сразу же ощущаются в воздухе.",
+          "createdAt": "2025-11-06T20:44:08.325Z"
+        },
+        {
+          "id": "4f3ce6cf-a739-4592-ad9f-c47d381a6f0a",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:44:14.777Z"
+        },
+        {
+          "id": "cc6a9af6-773a-4da0-9341-c5ef15c51e60",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:44:14.777Z"
+        },
+        {
+          "id": "af8f29c4-8537-417b-983c-bd49de77e888",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "отправиться в Центральная локация",
+          "createdAt": "2025-11-06T20:44:18.911Z"
+        },
+        {
+          "id": "dff771b5-7122-4f11-979a-c590197ef54a",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "gm",
+          "message": "Я осматриваюсь: юмор, абсурд, ирония, сарказм, английская литература, по мотивам серии книг терри пратчета \"плоский мир\": бар на окраине анкморпорка, любимый бак троллей и фентези, детектив, приключения сразу же ощущаются в воздухе.",
+          "createdAt": "2025-11-06T20:44:18.911Z"
+        },
+        {
+          "id": "b45576b0-f612-47a3-a606-07ed20f04b1a",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:44:23.690Z"
+        },
+        {
+          "id": "8f1cc242-17da-4544-a551-6935e09f9a77",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:44:23.690Z"
+        },
+        {
+          "id": "25dba7ba-e722-4f6f-8b23-3ced493179a7",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "пойти в темный переулок",
+          "createdAt": "2025-11-06T20:45:07.149Z"
+        },
+        {
+          "id": "aa26d279-6b59-4269-96df-51e22aae61ec",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (пойти в темный переулок)",
+          "createdAt": "2025-11-06T20:45:07.149Z"
+        },
+        {
+          "id": "c8d9733f-c2d1-45f2-8e83-fc8ec05505fd",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "отправиться в Тёмный переулок",
+          "createdAt": "2025-11-06T20:45:18.840Z"
+        },
+        {
+          "id": "c34fdc58-2e7b-4275-bd27-5582fdd5dc98",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "gm",
+          "message": "Я осматриваюсь: юмор, абсурд, ирония, сарказм, английская литература, по мотивам серии книг терри пратчета \"плоский мир\": бар на окраине анкморпорка, любимый бак троллей и фентези, детектив, приключения сразу же ощущаются в воздухе.",
+          "createdAt": "2025-11-06T20:45:18.840Z"
+        },
+        {
+          "id": "5bf47495-017a-400d-8e65-95d7de7c5db4",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:45:26.707Z"
+        },
+        {
+          "id": "42acd68e-b28f-41ca-8709-46b5be67511d",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:45:26.707Z"
+        },
+        {
+          "id": "6fd294f1-75ec-4193-9e81-5db4d0ff72c4",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "пойти на улица за черным входом",
+          "createdAt": "2025-11-06T20:46:00.845Z"
+        },
+        {
+          "id": "35184a90-1bb4-4539-ac19-03fa8dabb82b",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выскальзываю через чёрный ход и оказываюсь в узком переулке, пахнущем сыростью и старым металлом.",
+          "createdAt": "2025-11-06T20:46:00.845Z"
+        },
+        {
+          "id": "9d3b0f9f-df33-429c-87fa-1152589904cd",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "пройти в Тёмный переулок",
+          "createdAt": "2025-11-06T20:46:16.077Z"
+        },
+        {
+          "id": "ad535fb8-144c-4f5b-a2dd-7ee06958df86",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "gm",
+          "message": "В глубине слышны отдалённые шаги, а стены покрыты влажным мхом.",
+          "createdAt": "2025-11-06T20:46:16.077Z"
+        },
+        {
+          "id": "388129b2-e695-4314-abfc-1ea576aace2d",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "player",
+          "message": "отправиться в Задний двор лавки алхимика",
+          "createdAt": "2025-11-06T20:46:22.756Z"
+        },
+        {
+          "id": "cedd3e3a-f6ce-4be6-9e18-40b2cbc9f142",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выскальзываю через чёрный ход и оказываюсь в узком переулке, пахнущем сыростью и старым металлом.",
+          "createdAt": "2025-11-06T20:46:22.756Z"
+        },
+        {
+          "id": "c70903d0-bbf6-4cca-9a7e-98becc03af71",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "отправиться в Тёмный переулок",
+          "createdAt": "2025-11-06T20:46:36.305Z"
+        },
+        {
+          "id": "93775736-a412-40c2-a2c8-b2d2f6347e2f",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:46:36.305Z"
+        },
+        {
+          "id": "09c17ff1-328d-4f17-9271-f2dbca69c478",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "свы",
+          "createdAt": "2025-11-06T20:53:00.377Z"
+        },
+        {
+          "id": "65b4dd8f-f55d-4e72-bf4f-87dfa18e8fac",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (свы)",
+          "createdAt": "2025-11-06T20:53:00.377Z"
+        },
+        {
+          "id": "f656c8f6-f54c-4bb7-843f-45dc9b5c05ef",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "отправиться в Центральная локация",
+          "createdAt": "2025-11-06T20:53:08.026Z"
+        },
+        {
+          "id": "cbe6017a-8c60-48d8-8ab8-e83683ee0727",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "gm",
+          "message": "Я осматриваюсь: юмор, абсурд, ирония, сарказм, английская литература, по мотивам серии книг терри пратчета \"плоский мир\": бар на окраине анкморпорка, любимый бак троллей и фентези, детектив, приключения сразу же ощущаются в воздухе.",
+          "createdAt": "2025-11-06T20:53:08.026Z"
+        },
+        {
+          "id": "5e3e989f-c877-4dae-ba24-ccca4d30e195",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:53:12.472Z"
+        },
+        {
+          "id": "90ed8d0b-45ad-4773-b77d-15c94ff8e61b",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:53:12.472Z"
+        },
+        {
+          "id": "90295c50-19f1-4c96-928e-2e501f0c7d96",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "отправиться в Тёмный переулок",
+          "createdAt": "2025-11-06T20:53:18.256Z"
+        },
+        {
+          "id": "b8787082-cc54-4acb-93d5-cadb62eae8ff",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "gm",
+          "message": "Я замечаю узкий переулок, уходящий в темноту. В лужах отражается неоновый отблеск вывесок, а где-то внутри слышится шорох.",
+          "createdAt": "2025-11-06T20:53:18.256Z"
+        },
+        {
+          "id": "5754f04b-134f-41ba-ac55-f208e46483ad",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "player",
+          "message": "отправиться в Задний двор лавки алхимика",
+          "createdAt": "2025-11-06T20:53:22.321Z"
+        },
+        {
+          "id": "eb5d87c0-fc2a-486c-b370-b6d7201fd704",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "5a848726-d2e0-45cd-b998-6bb498314316",
+          "author": "gm",
+          "message": "Во дворе пахнет травами и серой, на верёвке сушатся пучки неизвестных растений. Дверь в лавку чуть приоткрыта.",
+          "createdAt": "2025-11-06T20:53:22.321Z"
+        },
+        {
+          "id": "233410ac-ca4e-4e60-b0e3-44fd83b922bd",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "5a848726-d2e0-45cd-b998-6bb498314316",
+          "author": "player",
+          "message": "отправиться в Тёмный переулок",
+          "createdAt": "2025-11-06T20:53:26.993Z"
+        },
+        {
+          "id": "77bb4b0e-8e9e-4d2e-aeda-9eed1cc5af18",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "gm",
+          "message": "Я замечаю узкий переулок, уходящий в темноту. В лужах отражается неоновый отблеск вывесок, а где-то внутри слышится шорох.",
+          "createdAt": "2025-11-06T20:53:26.993Z"
+        },
+        {
+          "id": "8618d35f-5fac-40ea-a495-c30aa3ca38ab",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "player",
+          "message": "отправиться в Улица за чёрным ходом",
+          "createdAt": "2025-11-06T20:53:33.735Z"
+        },
+        {
+          "id": "fb8b5c6d-c10f-44f9-86df-d1d618d2707b",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:53:33.735Z"
+        },
+        {
+          "id": "678bd02f-5c2e-4566-a487-86e7edbeefac",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "Вернуться в помещение",
+          "createdAt": "2025-11-06T20:53:44.337Z"
+        },
+        {
+          "id": "353c4b76-52f1-4612-9b6c-0d749fbdcd1e",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света. (Вернуться в помещение)",
+          "createdAt": "2025-11-06T20:53:44.337Z"
+        },
+        {
+          "id": "41261c4a-a36c-41cd-be7e-0f8e295e57c1",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:53:54.357Z"
+        },
+        {
+          "id": "31a6fc3e-8fee-46ef-a4d8-e24e1d2bea8f",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:53:54.357Z"
+        },
+        {
+          "id": "e84b5da3-86aa-4567-b12d-1444e04d75b7",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "отправиться в Тёмный переулок",
+          "createdAt": "2025-11-06T20:54:15.261Z"
+        },
+        {
+          "id": "80bb9e13-b169-4b5a-a23f-e6a52dd85f0c",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "gm",
+          "message": "Я замечаю узкий переулок, уходящий в темноту. В лужах отражается неоновый отблеск вывесок, а где-то внутри слышится шорох.",
+          "createdAt": "2025-11-06T20:54:15.261Z"
+        },
+        {
+          "id": "99d054e0-e76d-4bd9-bb91-c9480177d8ca",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:54:23.269Z"
+        },
+        {
+          "id": "ae4ddbf2-59f2-4b66-9c1d-dff47d2ee16d",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:54:23.269Z"
+        },
+        {
+          "id": "b1343dda-4ee4-4414-8d18-a4325c0d71cc",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "отправиться в Тёмный переулок",
+          "createdAt": "2025-11-06T20:54:50.887Z"
+        },
+        {
+          "id": "ee761851-58b1-4ae6-8333-a2d7415fc623",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "gm",
+          "message": "Я замечаю узкий переулок, уходящий в темноту. В лужах отражается неоновый отблеск вывесок, а где-то внутри слышится шорох.",
+          "createdAt": "2025-11-06T20:54:50.887Z"
+        },
+        {
+          "id": "fe2ae03f-fd43-456c-917b-ab0d020d3271",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "player",
+          "message": "отправиться в Улица за чёрным ходом",
+          "createdAt": "2025-11-06T20:54:57.702Z"
+        },
+        {
+          "id": "dba9c8f8-3408-4422-82c5-173fa50617fa",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:54:57.702Z"
+        },
+        {
+          "id": "a9d5ab33-6db6-4486-90a6-4881e3a7019f",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "пойти на улица у входа",
+          "createdAt": "2025-11-06T20:55:36.193Z"
+        },
+        {
+          "id": "15f1df71-2a33-4834-a664-38a5907a691e",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:55:36.193Z"
+        },
+        {
+          "id": "b243c1ac-2063-4de9-bb00-f58c8b141ebd",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "пойти в центральная локация",
+          "createdAt": "2025-11-06T20:56:05.367Z"
+        },
+        {
+          "id": "0f1ca8e6-af4a-4c0e-a576-4bb4432fae2c",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "gm",
+          "message": "Я осматриваюсь: юмор, абсурд, ирония, сарказм, английская литература, по мотивам серии книг терри пратчета \"плоский мир\": бар на окраине анкморпорка, любимый бак троллей и фентези, детектив, приключения сразу же ощущаются в воздухе.",
+          "createdAt": "2025-11-06T20:56:05.367Z"
+        },
+        {
+          "id": "7337a30c-c8ea-44c5-a2b3-556b3c923172",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "player",
+          "message": "отправиться в Улица у входа",
+          "createdAt": "2025-11-06T20:56:09.938Z"
+        },
+        {
+          "id": "bed3daf7-1cfc-4282-844e-e4e146a772f0",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T20:56:09.938Z"
         }
       ]
     }

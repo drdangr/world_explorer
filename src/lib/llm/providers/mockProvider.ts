@@ -1,7 +1,9 @@
 import type { GenerateTurnInput, LLMProvider } from "../provider";
 import type { LLMGameTurn, LocationPayload } from "../types";
+import { DEFAULT_EXIT_LABEL } from "@/lib/gameplay/constants";
 
 const DEFAULT_EXIT_NAME = "Улица у входа";
+const DEFAULT_EXIT_LABEL_NORMALIZED = normalizeText(DEFAULT_EXIT_LABEL);
 
 export class MockProvider implements LLMProvider {
   readonly name = "mock";
@@ -37,7 +39,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
     exits: currentExits,
   };
 
-  let suggestions = buildSuggestions(lowerMessage, playerLocation.exits);
+  let suggestions: string[] = [];
 
   if (isInitial) {
     if (playerLocation.exits.length === 0) {
@@ -57,7 +59,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
       playerLocation.exits = [
         {
           name: defaultStreet.name,
-          label: "Выйти наружу",
+          label: DEFAULT_EXIT_LABEL,
           bidirectional: true,
         },
       ];
@@ -72,12 +74,12 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
       exits: [
         {
           name: currentLocation.locationName,
-          label: "Дверь обратно в заведение",
+          label: DEFAULT_EXIT_LABEL,
           bidirectional: true,
         },
         {
           name: "Тёмный переулок",
-          label: "Дальше в глубь квартала",
+          label: "пройти в",
           bidirectional: true,
         },
       ],
@@ -90,7 +92,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
       exits: [
         {
           name: alley.name,
-          label: "Вернуться к чёрному ходу",
+          label: DEFAULT_EXIT_LABEL,
           bidirectional: true,
         },
       ],
@@ -98,7 +100,10 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
 
     playerLocation = alley;
     narration = alley.description;
-    suggestions = ["Осмотреть переулок", "Прислушаться к звукам", "Вернуться в заведение"];
+    suggestions = mergeSuggestions(
+      ["Осмотреть переулок", "Прислушаться к звукам", "Вернуться в заведение"],
+      buildSuggestions("", playerLocation.exits),
+    );
   } else if (lowerMessage.includes("кух")) {
     const kitchen: LocationPayload = {
       name: "Кухня",
@@ -114,12 +119,12 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
       exits: [
         {
           name: currentLocation.locationName,
-          label: "Назад в зал",
+          label: DEFAULT_EXIT_LABEL,
           bidirectional: true,
         },
         {
           name: "Улица за чёрным ходом",
-          label: "Чёрный ход",
+          label: DEFAULT_EXIT_LABEL,
           bidirectional: true,
         },
       ],
@@ -132,7 +137,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
       exits: [
         {
           name: kitchen.name,
-          label: "На кухню",
+          label: DEFAULT_EXIT_LABEL,
           bidirectional: true,
         },
       ],
@@ -140,7 +145,10 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
 
     playerLocation = kitchen;
     narration = kitchen.description;
-    suggestions = ["Проверить нож", "Посмотреть на поваров", "Выйти через чёрный ход"];
+    suggestions = mergeSuggestions(
+      ["Проверить нож", "Посмотреть на поваров", "Выйти через чёрный ход"],
+      buildSuggestions("", playerLocation.exits),
+    );
   } else if (lowerMessage.includes("улиц") || lowerMessage.includes("выйт")) {
     const exit = playerLocation.exits.find((item) => item.name.toLowerCase().includes("улиц"));
 
@@ -153,12 +161,12 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
         exits: [
           {
             name: exit.name,
-            label: "Вернуться на улицу",
+            label: DEFAULT_EXIT_LABEL,
             bidirectional: true,
           },
           {
             name: "Задний двор лавки алхимика",
-            label: "Тусклая дверь в дальнем конце",
+            label: "пройти к",
             bidirectional: true,
           },
         ],
@@ -178,7 +186,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
         exits: [
           {
             name: sideAlley.name,
-            label: "В переулок",
+            label: DEFAULT_EXIT_LABEL,
             bidirectional: true,
           },
         ],
@@ -193,19 +201,22 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
         exits: [
           {
             name: currentLocation.locationName,
-            label: "Вернуться внутрь",
+            label: DEFAULT_EXIT_LABEL,
             bidirectional: true,
           },
           {
             name: sideAlley.name,
-            label: "Неприметный переулок",
+            label: DEFAULT_EXIT_LABEL,
             bidirectional: true,
           },
         ],
       };
 
       narration = playerLocation.description;
-      suggestions = ["Осмотреть улицу", "Заглянуть в переулок", "Подойти к лавке", "Вернуться в помещение"];
+      suggestions = mergeSuggestions(
+        ["Осмотреть улицу", "Заглянуть в переулок", "Подойти к лавке", "Вернуться в помещение"],
+        buildSuggestions("", playerLocation.exits),
+      );
     }
   } else {
     const targetLocation = findConnectedLocation(world, currentLocation, normalizedMessage);
@@ -215,9 +226,14 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
       narration =
         targetLocation.description ??
         `Я останавливаюсь в ${targetLocation.locationName.toLowerCase()} и оглядываюсь по сторонам.`;
-      suggestions = buildSuggestions("", playerLocation.exits);
+      suggestions = buildSuggestions(lowerMessage, playerLocation.exits);
     }
   }
+
+  suggestions =
+    suggestions.length > 0
+      ? mergeSuggestions(suggestions, buildSuggestions(lowerMessage, playerLocation.exits))
+      : buildSuggestions(lowerMessage, playerLocation.exits);
 
   return {
     narration,
@@ -235,7 +251,7 @@ function mapExits(world: GenerateTurnInput["world"], location: GenerateTurnInput
     const target = world.graph[connection.targetId];
     return {
       name: target?.locationName ?? "Неизвестная локация",
-      label: connection.label ?? undefined,
+      label: connection.label ?? DEFAULT_EXIT_LABEL,
       bidirectional: connection.bidirectional,
     };
   });
@@ -266,22 +282,46 @@ function composeNarration(
   return `${location.description} (${playerMessage.trim()})`;
 }
 
-function buildSuggestions(
-  lowerMessage: string,
-  exits: LocationPayload["exits"],
-): string[] {
-  if (exits.length === 0) {
-    return ["Оглядеться", "Искать выход", "Изучить предметы"];
-  }
-
+function buildSuggestions(lowerMessage: string, exits: LocationPayload["exits"]): string[] {
   const base = ["Оглядеться", "Поговорить с кем-нибудь"];
-  const exitSuggestions = exits.slice(0, 2).map((exit) => `Пойти: ${exit.name}`);
 
   if (lowerMessage.includes("взять") || lowerMessage.includes("осмотр")) {
     base.push("Изучить предметы");
   }
 
-  return [...base, ...exitSuggestions];
+  if (exits.length === 0) {
+    base.push("Искать выход");
+    if (!base.includes("Изучить предметы")) {
+      base.push("Изучить предметы");
+    }
+  }
+
+  const exitSuggestions = exits.map(formatExitAction);
+
+  return mergeSuggestions(base, exitSuggestions);
+}
+
+function mergeSuggestions(primary: string[], additional: string[]): string[] {
+  const seen = new Set<string>();
+  const merged: string[] = [];
+
+  for (const suggestion of [...primary, ...additional]) {
+    if (!suggestion || seen.has(suggestion)) {
+      continue;
+    }
+
+    seen.add(suggestion);
+    merged.push(suggestion);
+  }
+
+  return merged;
+}
+
+function formatExitAction(exit: LocationPayload["exits"][number]): string {
+  const prefix = exit.label?.trim() || DEFAULT_EXIT_LABEL;
+  const hasPunctuation = /[\s]$/.test(prefix);
+  const separator = hasPunctuation ? "" : " ";
+  return `${prefix}${separator}${exit.name}`;
 }
 
 const MOVEMENT_WORDS = new Set([
@@ -408,12 +448,19 @@ function findConnectedLocation(
 
     const targetNameNormalized = normalizeText(target.locationName);
     const labelNormalized = connection.label ? normalizeText(connection.label) : "";
+    const labelIsDefault = labelNormalized === DEFAULT_EXIT_LABEL_NORMALIZED;
 
-    const matchedCandidate = candidates.find(
-      (candidate) =>
-        matchesNormalized(candidate, targetNameNormalized) ||
-        (labelNormalized && matchesNormalized(candidate, labelNormalized)),
-    );
+    const matchedCandidate = candidates.find((candidate) => {
+      if (matchesNormalized(candidate, targetNameNormalized)) {
+        return true;
+      }
+
+      if (!labelNormalized || labelIsDefault) {
+        return false;
+      }
+
+      return matchesNormalized(candidate, labelNormalized);
+    });
 
     if (!matchedCandidate) {
       continue;
@@ -421,7 +468,7 @@ function findConnectedLocation(
 
     const bareReference =
       isBareReference(matchedCandidate, targetNameNormalized) ||
-      (labelNormalized ? isBareReference(matchedCandidate, labelNormalized) : false);
+      (labelNormalized && !labelIsDefault ? isBareReference(matchedCandidate, labelNormalized) : false);
 
     const candidateTokensCount = matchedCandidate.split(" ").filter(Boolean).length;
 
@@ -459,7 +506,7 @@ function toLocationPayloadFromWorld(
       })),
     exits: location.connections.map((connection) => ({
       name: world.graph[connection.targetId]?.locationName ?? "Неизвестная локация",
-      label: connection.label ?? undefined,
+      label: connection.label ?? DEFAULT_EXIT_LABEL,
       bidirectional: connection.bidirectional,
     })),
   };

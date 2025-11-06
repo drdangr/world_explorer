@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import type { Character, CharacterId, Item, LocationNode, SessionEntry, World } from "@/types/game";
 import type { LLMGameTurn, ItemDescriptor, LocationPayload } from "@/lib/llm/types";
+import { DEFAULT_EXIT_LABEL } from "@/lib/gameplay/constants";
 
 interface ApplyGameTurnParams {
   world: World;
@@ -135,27 +136,25 @@ function ensureLocation(world: World, name: string): LocationNode {
 function syncExits(world: World, source: LocationNode, payload: LocationPayload) {
   payload.exits.forEach((exit) => {
     const target = ensureLocation(world, exit.name);
-    upsertConnection(source, target, exit.label ?? undefined, exit.bidirectional ?? true);
+    const label = exit.label?.trim() || DEFAULT_EXIT_LABEL;
+    const bidirectional = exit.bidirectional ?? true;
 
-    if (exit.bidirectional ?? true) {
-      upsertConnection(target, source, exit.label ?? undefined, exit.bidirectional ?? true);
+    upsertConnection(source, target, label, bidirectional);
+
+    if (bidirectional) {
+      upsertConnection(target, source, label, bidirectional);
     }
   });
 }
 
-function upsertConnection(
-  source: LocationNode,
-  target: LocationNode,
-  label: string | undefined,
-  bidirectional: boolean,
-) {
+function upsertConnection(source: LocationNode, target: LocationNode, label: string, bidirectional: boolean) {
   const existingIndex = source.connections.findIndex((connection) => connection.targetId === target.id);
 
   if (existingIndex >= 0) {
     const existing = source.connections[existingIndex];
     source.connections[existingIndex] = {
       ...existing,
-      label: label ?? existing.label,
+      label: label || existing.label || DEFAULT_EXIT_LABEL,
       bidirectional: existing.bidirectional || bidirectional,
     };
     return;
@@ -164,7 +163,7 @@ function upsertConnection(
   source.connections.push({
     id: randomUUID(),
     targetId: target.id,
-    label,
+    label: label || DEFAULT_EXIT_LABEL,
     bidirectional,
   });
 }
