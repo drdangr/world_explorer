@@ -1,0 +1,566 @@
+{
+  "characters": [
+    {
+      "id": "9fdd7aba-8051-4e59-bba9-96544966d709",
+      "name": "Тощий Пит",
+      "description": "сотрудник Ночной Стражи, детектив, оборотень",
+      "inventory": [],
+      "currentWorldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+      "currentLocationId": "5a848726-d2e0-45cd-b998-6bb498314316",
+      "history": [
+        {
+          "id": "02ce5531-8530-4a78-ad40-0959fc774561",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "gm",
+          "message": "Я делаю первый шаг в центральная локация и ощущаю, как юмор, абсурд, ирония, сарказм, английская литература ложится на плечи.",
+          "createdAt": "2025-11-06T18:56:49.019Z"
+        },
+        {
+          "id": "92dc4337-af4c-4240-b7a2-c04f34032746",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "player",
+          "message": "выйти на улицу",
+          "createdAt": "2025-11-06T19:02:35.304Z"
+        },
+        {
+          "id": "6e8be881-5014-4c50-a041-891a589c6cb9",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T19:02:35.304Z"
+        },
+        {
+          "id": "89f7f35c-20a4-45b0-a3fd-5236504a2350",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Осмотреть улицу",
+          "createdAt": "2025-11-06T19:02:46.676Z"
+        },
+        {
+          "id": "60d01dbc-05d9-4e9e-ab7c-5268b85ba80a",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Осмотреть улицу)",
+          "createdAt": "2025-11-06T19:02:46.676Z"
+        },
+        {
+          "id": "71908b3a-7084-4278-a9ce-5a946c95d3b8",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Пойти: Центральная локация",
+          "createdAt": "2025-11-06T19:02:54.324Z"
+        },
+        {
+          "id": "f1b59a70-6a52-44c3-9cb6-5b293f52eab7",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Пойти: Центральная локация)",
+          "createdAt": "2025-11-06T19:02:54.324Z"
+        },
+        {
+          "id": "470d8cb6-a9d8-4771-afc8-e6f55beaede2",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Пойти: Центральная локация",
+          "createdAt": "2025-11-06T19:03:09.054Z"
+        },
+        {
+          "id": "892a1eac-46eb-415f-a642-8d605e91514f",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Пойти: Центральная локация)",
+          "createdAt": "2025-11-06T19:03:09.054Z"
+        },
+        {
+          "id": "3f5148fa-95de-406a-8fe5-9b649c027772",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "пойти на улицу",
+          "createdAt": "2025-11-06T19:03:48.976Z"
+        },
+        {
+          "id": "f161249a-3db6-4a05-8175-d51bef8c2e1e",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (пойти на улицу)",
+          "createdAt": "2025-11-06T19:03:48.976Z"
+        },
+        {
+          "id": "71341647-2618-4a51-85ab-00ca4f4a1334",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Оглядеться",
+          "createdAt": "2025-11-06T19:03:56.080Z"
+        },
+        {
+          "id": "876f2d66-7756-41cf-9586-501896833c08",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Оглядеться)",
+          "createdAt": "2025-11-06T19:03:56.080Z"
+        },
+        {
+          "id": "a02b6385-0ad5-476c-8aa4-bd6943325e6c",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Поговорить с кем-нибудь",
+          "createdAt": "2025-11-06T19:04:05.968Z"
+        },
+        {
+          "id": "107c46b5-5d18-47e6-ba98-80aa62c92095",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Поговорить с кем-нибудь)",
+          "createdAt": "2025-11-06T19:04:05.968Z"
+        },
+        {
+          "id": "6f5f4a51-49b6-44c4-9766-782fa3915c23",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Поговорить с кем-нибудь",
+          "createdAt": "2025-11-06T19:04:19.513Z"
+        },
+        {
+          "id": "c5fa83e8-b3d8-4706-bca1-8fe8917cc9de",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Поговорить с кем-нибудь)",
+          "createdAt": "2025-11-06T19:04:19.513Z"
+        },
+        {
+          "id": "e69aef72-18b5-4bf4-9732-b028a74660a0",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Оглядеться",
+          "createdAt": "2025-11-06T19:07:01.981Z"
+        },
+        {
+          "id": "ea3fa23c-31e3-4d54-bda7-0b99a7a0c05f",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Оглядеться)",
+          "createdAt": "2025-11-06T19:07:01.981Z"
+        },
+        {
+          "id": "784b26da-0518-416b-9b2f-a7ed1c7fc1c8",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "оглядеться",
+          "createdAt": "2025-11-06T19:08:54.498Z"
+        },
+        {
+          "id": "2c22e99e-1690-4c3b-a8a5-a66a4e4c16dd",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (оглядеться)",
+          "createdAt": "2025-11-06T19:08:54.498Z"
+        },
+        {
+          "id": "70b72d92-1afe-459b-9fea-774fd64ea381",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Пойти: Центральная локация",
+          "createdAt": "2025-11-06T19:09:09.323Z"
+        },
+        {
+          "id": "e2f6272f-7f39-4c82-a6de-1f177107837e",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Пойти: Центральная локация)",
+          "createdAt": "2025-11-06T19:09:09.323Z"
+        },
+        {
+          "id": "fcb5b712-2c3d-47fc-80d6-707fb6076fd3",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "центральная локация",
+          "createdAt": "2025-11-06T19:15:01.419Z"
+        },
+        {
+          "id": "c99ae851-bc29-463d-877f-9486087b5b5d",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (центральная локация)",
+          "createdAt": "2025-11-06T19:15:01.419Z"
+        },
+        {
+          "id": "56aca9a3-0fd1-457c-9ded-ca24dbf5c5c9",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Пойти: Центральная локация",
+          "createdAt": "2025-11-06T19:15:07.231Z"
+        },
+        {
+          "id": "9d54a811-ac99-4e42-9eff-1a922039a687",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Пойти: Центральная локация)",
+          "createdAt": "2025-11-06T19:15:07.231Z"
+        },
+        {
+          "id": "10475b1f-8ed9-44d3-818c-2af60425f0cb",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "пойти на улицу",
+          "createdAt": "2025-11-06T19:15:35.096Z"
+        },
+        {
+          "id": "0b953a47-a3b9-4ab1-8a32-acb5d7332acc",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (пойти на улицу)",
+          "createdAt": "2025-11-06T19:15:35.096Z"
+        },
+        {
+          "id": "9a5701a0-7ef2-4188-bcd7-055dd9bcb07c",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Пойти: Центральная локация",
+          "createdAt": "2025-11-06T19:19:59.849Z"
+        },
+        {
+          "id": "2d63b8bb-83f2-4be6-bdb5-ba203c92ddf8",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Пойти: Центральная локация)",
+          "createdAt": "2025-11-06T19:19:59.849Z"
+        },
+        {
+          "id": "9d689e02-6803-4ecd-9331-57533c52486c",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "выйти на улицу",
+          "createdAt": "2025-11-06T19:22:09.108Z"
+        },
+        {
+          "id": "f2e8dc3f-ad64-4d24-b809-8c2b83e25bd0",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (выйти на улицу)",
+          "createdAt": "2025-11-06T19:22:09.108Z"
+        },
+        {
+          "id": "577d928c-1e9d-4fcf-87cf-04f058809509",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Оглядеться",
+          "createdAt": "2025-11-06T19:22:16.357Z"
+        },
+        {
+          "id": "1bd71c4a-d292-42d6-8751-ccacaa7348f1",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Оглядеться)",
+          "createdAt": "2025-11-06T19:22:16.357Z"
+        },
+        {
+          "id": "64d7ec1a-e08a-47f3-a6df-a1cc2875fcfc",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "улица у входа",
+          "createdAt": "2025-11-06T19:25:23.053Z"
+        },
+        {
+          "id": "501ee560-eb28-4112-96fa-8bcd216ab476",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (улица у входа)",
+          "createdAt": "2025-11-06T19:25:23.053Z"
+        },
+        {
+          "id": "3e033f97-b179-4cbc-950c-fdfca43d551c",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "черный вход",
+          "createdAt": "2025-11-06T19:25:36.144Z"
+        },
+        {
+          "id": "65ef7f61-bd21-4911-8efd-47405ab813ed",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выскальзываю через чёрный ход и оказываюсь в узком переулке, пахнущем сыростью и старым металлом.",
+          "createdAt": "2025-11-06T19:25:36.144Z"
+        },
+        {
+          "id": "4186c566-4382-45fb-b56a-e5c8c4227f24",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "темный переулок",
+          "createdAt": "2025-11-06T19:26:13.640Z"
+        },
+        {
+          "id": "291b9c49-8825-40e6-ada6-f2ea798365f9",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выскальзываю через чёрный ход и оказываюсь в узком переулке, пахнущем сыростью и старым металлом. (темный переулок)",
+          "createdAt": "2025-11-06T19:26:13.640Z"
+        },
+        {
+          "id": "e87be173-856a-4fae-b5a5-813b1738c51e",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "Пойти: Тёмный переулок",
+          "createdAt": "2025-11-06T19:26:24.948Z"
+        },
+        {
+          "id": "09b4aec4-1b46-4935-88d0-df6cc46d4273",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выскальзываю через чёрный ход и оказываюсь в узком переулке, пахнущем сыростью и старым металлом. (Пойти: Тёмный переулок)",
+          "createdAt": "2025-11-06T19:26:24.948Z"
+        },
+        {
+          "id": "ebfc380f-eb6e-4002-ad6b-de9a2863b554",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "Пойти: Улица у входа",
+          "createdAt": "2025-11-06T19:26:50.261Z"
+        },
+        {
+          "id": "a70a53a4-1860-4fc5-9ff9-a1e5db86c722",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T19:26:50.261Z"
+        },
+        {
+          "id": "195e9778-84e7-422f-9dda-6ace9e32357a",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "улица за черным входом",
+          "createdAt": "2025-11-06T19:27:22.677Z"
+        },
+        {
+          "id": "4f14c33a-dac6-47bd-987a-63613f46d1de",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выскальзываю через чёрный ход и оказываюсь в узком переулке, пахнущем сыростью и старым металлом.",
+          "createdAt": "2025-11-06T19:27:22.677Z"
+        },
+        {
+          "id": "8be17c56-3e9e-4bd5-8c80-38f411fb151b",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "темный переулок",
+          "createdAt": "2025-11-06T19:27:40.562Z"
+        },
+        {
+          "id": "99827b1c-3d6d-469a-bc3f-eb7ebaf34f48",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выскальзываю через чёрный ход и оказываюсь в узком переулке, пахнущем сыростью и старым металлом. (темный переулок)",
+          "createdAt": "2025-11-06T19:27:40.562Z"
+        },
+        {
+          "id": "56d0afd0-28f6-4932-8b32-c05264169e1b",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "Пойти: Тёмный переулок",
+          "createdAt": "2025-11-06T19:27:54.977Z"
+        },
+        {
+          "id": "5c43eaf1-5094-40de-913c-bb6f410ce902",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выскальзываю через чёрный ход и оказываюсь в узком переулке, пахнущем сыростью и старым металлом. (Пойти: Тёмный переулок)",
+          "createdAt": "2025-11-06T19:27:54.977Z"
+        },
+        {
+          "id": "20dd06d3-b032-4d66-8c01-40102ece4e95",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "задний двор",
+          "createdAt": "2025-11-06T19:28:06.732Z"
+        },
+        {
+          "id": "481b5d09-a0f6-4dcb-a25a-ef4a12f01121",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выскальзываю через чёрный ход и оказываюсь в узком переулке, пахнущем сыростью и старым металлом. (задний двор)",
+          "createdAt": "2025-11-06T19:28:06.732Z"
+        },
+        {
+          "id": "0b5a4f79-7f33-4e9a-9695-f75078d8273d",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "пойти на улицу у входа",
+          "createdAt": "2025-11-06T19:46:34.036Z"
+        },
+        {
+          "id": "87e40676-bfb4-44a9-88f9-fc12c506a10f",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T19:46:34.037Z"
+        },
+        {
+          "id": "c7bbe19e-16d8-4777-8525-ae75e6c9b2f3",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Подойти к лавке",
+          "createdAt": "2025-11-06T19:46:57.138Z"
+        },
+        {
+          "id": "01667ed7-247f-4fba-8904-0ce8d30a066b",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Подойти к лавке)",
+          "createdAt": "2025-11-06T19:46:57.138Z"
+        },
+        {
+          "id": "9afa57fc-be53-408f-817e-c6a927a12ea2",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Пойти: Центральная локация",
+          "createdAt": "2025-11-06T19:47:20.066Z"
+        },
+        {
+          "id": "56da4566-b124-4eb1-b04b-7c5c4b947872",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "gm",
+          "message": "Я осматриваюсь: юмор, абсурд, ирония, сарказм, английская литература, по мотивам серии книг терри пратчета \"плоский мир\": бар на окраине анкморпорка, любимый бак троллей и фентези, детектив, приключения сразу же ощущаются в воздухе.",
+          "createdAt": "2025-11-06T19:47:20.066Z"
+        },
+        {
+          "id": "8f10a3bc-ba27-471b-b037-3fa158ec01f3",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "author": "player",
+          "message": "Пойти: Улица у входа",
+          "createdAt": "2025-11-06T19:47:25.837Z"
+        },
+        {
+          "id": "7f1f5b82-c8e5-4898-85e6-1f9f4a321868",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T19:47:25.837Z"
+        },
+        {
+          "id": "bcb980b1-449a-4264-b76d-b83efb3dfd3a",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Подойти к лавке",
+          "createdAt": "2025-11-06T19:47:32.670Z"
+        },
+        {
+          "id": "6787fc0e-93f4-4288-a04b-194facd317ea",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "gm",
+          "message": "Я выхожу к улица у входа и на мгновение щурюсь от света. (Подойти к лавке)",
+          "createdAt": "2025-11-06T19:47:32.670Z"
+        },
+        {
+          "id": "8ba8ea42-8b73-43d2-98d9-a63a5aeb19a7",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "author": "player",
+          "message": "Пойти: Улица за чёрным ходом",
+          "createdAt": "2025-11-06T19:47:45.990Z"
+        },
+        {
+          "id": "06d579bd-233c-43e1-ac2b-cb56c3092916",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "gm",
+          "message": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света.",
+          "createdAt": "2025-11-06T19:47:45.991Z"
+        },
+        {
+          "id": "b8e788d4-4135-475a-b748-9110d0201c1c",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "author": "player",
+          "message": "Заглянуть в переулок",
+          "createdAt": "2025-11-06T19:47:53.409Z"
+        },
+        {
+          "id": "2a81b1f5-93f7-4947-9b4c-6a404a3dbdb0",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "gm",
+          "message": "Я замечаю узкий переулок, уходящий в темноту. В лужах отражается неоновый отблеск вывесок, а где-то внутри слышится шорох.",
+          "createdAt": "2025-11-06T19:47:53.409Z"
+        },
+        {
+          "id": "42785b81-53fa-48d0-82c5-0c3d3e0305d3",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "author": "player",
+          "message": "пойти на задний двор лавки",
+          "createdAt": "2025-11-06T19:48:22.017Z"
+        },
+        {
+          "id": "0b58e704-a9f5-4324-a8d6-df5b6a895604",
+          "worldId": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+          "locationId": "5a848726-d2e0-45cd-b998-6bb498314316",
+          "author": "gm",
+          "message": "Во дворе пахнет травами и серой, на верёвке сушатся пучки неизвестных растений. Дверь в лавку чуть приоткрыта.",
+          "createdAt": "2025-11-06T19:48:22.017Z"
+        }
+      ]
+    }
+  ]
+}

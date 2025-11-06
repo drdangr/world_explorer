@@ -1,0 +1,132 @@
+{
+  "worlds": [
+    {
+      "id": "a28818e4-12a5-40e1-b53a-3ea6ad123abc",
+      "name": "бар Каменная Сопля",
+      "setting": "по мотивам серии книг Терри Пратчета \"Плоский Мир\": бар на окраине Анкморпорка, любимый бак троллей",
+      "atmosphere": "юмор, абсурд, ирония, сарказм, английская литература",
+      "genre": "фентези, детектив, приключения",
+      "createdAt": "2025-11-06T17:53:45.314Z",
+      "updatedAt": "2025-11-06T19:48:22.017Z",
+      "entryLocationId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+      "graph": {
+        "b77f6f1e-4b11-49ad-ab85-c753181de6b9": {
+          "id": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+          "locationName": "Центральная локация",
+          "description": "Я осматриваюсь: юмор, абсурд, ирония, сарказм, английская литература, по мотивам серии книг терри пратчета \"плоский мир\": бар на окраине анкморпорка, любимый бак троллей и фентези, детектив, приключения сразу же ощущаются в воздухе.",
+          "discovered": true,
+          "items": [],
+          "connections": [
+            {
+              "id": "ff785040-de07-46f5-9bc8-b6eb0021c58a",
+              "targetId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+              "label": "Вернуться внутрь",
+              "bidirectional": true
+            }
+          ]
+        },
+        "ed123ac6-f154-4dd6-b407-fb065504f4f2": {
+          "id": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+          "locationName": "Улица у входа",
+          "description": "Я выхожу к улица у входа и на мгновение щурюсь от света.",
+          "discovered": true,
+          "items": [],
+          "connections": [
+            {
+              "id": "2f683b71-d2e2-463a-af54-ce47b370b632",
+              "targetId": "b77f6f1e-4b11-49ad-ab85-c753181de6b9",
+              "label": "Вернуться внутрь",
+              "bidirectional": true
+            },
+            {
+              "id": "9a7b4c12-59bd-403f-9cc3-8ebc21f445c8",
+              "targetId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+              "label": "Вернуться внутрь",
+              "bidirectional": true
+            },
+            {
+              "id": "1cde2cf8-7f03-495e-92d7-4466a864ebf9",
+              "targetId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+              "label": "Вернуться на улицу",
+              "bidirectional": true
+            }
+          ]
+        },
+        "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49": {
+          "id": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+          "locationName": "Улица за чёрным ходом",
+          "description": "Я выхожу к улица за чёрным ходом и на мгновение щурюсь от света.",
+          "discovered": true,
+          "items": [],
+          "connections": [
+            {
+              "id": "4fe357af-05d3-48a9-ae70-fae2d44146ba",
+              "targetId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+              "label": "Вернуться внутрь",
+              "bidirectional": true
+            },
+            {
+              "id": "b5b9b533-5855-4ff4-bdb6-49a61538ae85",
+              "targetId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+              "label": "Вернуться на улицу",
+              "bidirectional": true
+            }
+          ]
+        },
+        "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4": {
+          "id": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+          "locationName": "Тёмный переулок",
+          "description": "Я замечаю узкий переулок, уходящий в темноту. В лужах отражается неоновый отблеск вывесок, а где-то внутри слышится шорох.",
+          "discovered": true,
+          "items": [],
+          "connections": [
+            {
+              "id": "20b8b18f-a59a-4535-93d1-8e401d663e61",
+              "targetId": "09b6472f-e3cb-4d6f-97d9-eeb3a8ed7d49",
+              "label": "Вернуться на улицу",
+              "bidirectional": true
+            },
+            {
+              "id": "b2e1fce6-d109-4180-98ab-5d0d7e455c1f",
+              "targetId": "ed123ac6-f154-4dd6-b407-fb065504f4f2",
+              "label": "Вернуться на улицу",
+              "bidirectional": true
+            },
+            {
+              "id": "35f94563-9302-491d-8f9e-63c853566cb3",
+              "targetId": "5a848726-d2e0-45cd-b998-6bb498314316",
+              "label": "В переулок",
+              "bidirectional": true
+            }
+          ]
+        },
+        "5a848726-d2e0-45cd-b998-6bb498314316": {
+          "id": "5a848726-d2e0-45cd-b998-6bb498314316",
+          "locationName": "Задний двор лавки алхимика",
+          "description": "Во дворе пахнет травами и серой, на верёвке сушатся пучки неизвестных растений. Дверь в лавку чуть приоткрыта.",
+          "discovered": true,
+          "items": [
+            {
+              "id": "f0a75e5b-7455-4cf0-8362-4162bc9d3fab",
+              "name": "Пучок сушёного мухомора",
+              "description": "Местный алхимик уверяет, что это идеальная приправа для тролльего блюда.",
+              "portable": true,
+              "ownerCharacterId": null
+            }
+          ],
+          "connections": [
+            {
+              "id": "0f1164ef-39e5-4654-82a1-29024003bae5",
+              "targetId": "8df2dde4-99fa-41bc-9bd7-e16cbbdc92d4",
+              "label": "В переулок",
+              "bidirectional": true
+            }
+          ]
+        }
+      },
+      "ownerCharacterIds": [
+        "9fdd7aba-8051-4e59-bba9-96544966d709"
+      ]
+    }
+  ]
+}
