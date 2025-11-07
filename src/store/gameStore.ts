@@ -30,6 +30,7 @@ interface GameState {
 
 interface GameActions {
   loadInitialData: () => Promise<void>;
+  loadSessionLog: (worldId: WorldId | null, characterId: CharacterId | null) => Promise<void>;
   selectWorld: (worldId: WorldId | null) => void;
   selectCharacter: (characterId: CharacterId | null) => void;
   requestInitialTurn: () => Promise<void>;
@@ -88,11 +89,13 @@ export const useGameStore = create<GameState>((set, get) => ({
           characters,
           currentWorldId,
           currentCharacterId,
-          messages: deriveMessages(worlds, characters, currentWorldId, currentCharacterId),
+          messages: [],
           suggestions: [],
           isInitializing: false,
           isProcessingTurn: false,
         });
+
+        await get().actions.loadSessionLog(currentWorldId, currentCharacterId);
       } catch (error) {
         console.error(error);
         set({
@@ -103,22 +106,44 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
     },
 
+    loadSessionLog: async (worldId, characterId) => {
+      if (!worldId || !characterId) {
+        set({ messages: [], suggestions: [] });
+        return;
+      }
+
+      try {
+        const params = new URLSearchParams({ characterId, worldId });
+        const response = await fetch(`/api/session/log?${params.toString()}`, {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Не удалось загрузить историю сессии");
+        }
+
+        const data = (await response.json()) as {
+          file: string | null;
+          entries: SessionEntry[];
+        };
+
+        set({ messages: data.entries, suggestions: [], error: null });
+      } catch (error) {
+        console.error(error);
+        set({ error: "Не удалось загрузить историю", messages: [] });
+      }
+    },
+
     selectWorld: (worldId) => {
-      set((state) => ({
-        currentWorldId: worldId,
-        messages: deriveMessages(state.worlds, state.characters, worldId, state.currentCharacterId),
-        suggestions: [],
-        error: null,
-      }));
+      set({ currentWorldId: worldId, messages: [], suggestions: [], error: null });
+
+      void get().actions.loadSessionLog(worldId, get().currentCharacterId);
     },
 
     selectCharacter: (characterId) => {
-      set((state) => ({
-        currentCharacterId: characterId,
-        messages: deriveMessages(state.worlds, state.characters, state.currentWorldId, characterId),
-        suggestions: [],
-        error: null,
-      }));
+      set({ currentCharacterId: characterId, messages: [], suggestions: [], error: null });
+
+      void get().actions.loadSessionLog(get().currentWorldId, characterId);
     },
 
     requestInitialTurn: async () => {
@@ -154,11 +179,13 @@ export const useGameStore = create<GameState>((set, get) => ({
           return {
             worlds,
             currentWorldId: world.id,
-            messages: deriveMessages(worlds, state.characters, world.id, state.currentCharacterId),
+            messages: [],
             suggestions: [],
             isMutating: false,
           };
         });
+
+        await get().actions.loadSessionLog(world.id, get().currentCharacterId);
 
         return world;
       } catch (error) {
@@ -191,10 +218,12 @@ export const useGameStore = create<GameState>((set, get) => ({
           const worlds = state.worlds.map((item) => (item.id === world.id ? world : item));
           return {
             worlds,
-            messages: deriveMessages(worlds, state.characters, state.currentWorldId, state.currentCharacterId),
+            messages: [],
             isMutating: false,
           };
         });
+
+        await get().actions.loadSessionLog(get().currentWorldId, get().currentCharacterId);
 
         return world;
       } catch (error) {
@@ -228,11 +257,13 @@ export const useGameStore = create<GameState>((set, get) => ({
           return {
             worlds,
             currentWorldId,
-            messages: deriveMessages(worlds, state.characters, currentWorldId, state.currentCharacterId),
+            messages: [],
             suggestions: [],
             isMutating: false,
           };
         });
+
+        await get().actions.loadSessionLog(get().currentWorldId, get().currentCharacterId);
 
         return true;
       } catch (error) {
@@ -266,11 +297,13 @@ export const useGameStore = create<GameState>((set, get) => ({
           return {
             characters,
             currentCharacterId: character.id,
-            messages: deriveMessages(state.worlds, characters, state.currentWorldId, character.id),
+            messages: [],
             suggestions: [],
             isMutating: false,
           };
         });
+
+        await get().actions.loadSessionLog(get().currentWorldId, character.id);
 
         return character;
       } catch (error) {
@@ -306,10 +339,12 @@ export const useGameStore = create<GameState>((set, get) => ({
           );
           return {
             characters,
-            messages: deriveMessages(state.worlds, characters, state.currentWorldId, state.currentCharacterId),
+            messages: [],
             isMutating: false,
           };
         });
+
+        await get().actions.loadSessionLog(get().currentWorldId, get().currentCharacterId);
 
         return character;
       } catch (error) {
@@ -346,11 +381,13 @@ export const useGameStore = create<GameState>((set, get) => ({
           return {
             characters,
             currentCharacterId,
-            messages: deriveMessages(state.worlds, characters, state.currentWorldId, currentCharacterId),
+            messages: [],
             suggestions: [],
             isMutating: false,
           };
         });
+
+        await get().actions.loadSessionLog(get().currentWorldId, get().currentCharacterId);
 
         return true;
       } catch (error) {
@@ -406,6 +443,10 @@ async function processSessionTurn(
     const data = (await response.json()) as {
       world: World;
       character: Character;
+      session: {
+        file: string | null;
+        entries: SessionEntry[];
+      };
       suggestions?: string[];
     };
 
@@ -415,7 +456,7 @@ async function processSessionTurn(
       return {
         worlds,
         characters,
-        messages: deriveMessages(worlds, characters, currentWorldId, currentCharacterId),
+        messages: data.session.entries,
         suggestions: data.suggestions ?? [],
         isProcessingTurn: false,
       };
@@ -427,26 +468,6 @@ async function processSessionTurn(
       isProcessingTurn: false,
     });
   }
-}
-
-function deriveMessages(
-  worlds: World[],
-  characters: Character[],
-  worldId: WorldId | null,
-  characterId: CharacterId | null,
-): SessionEntry[] {
-  if (!worldId || !characterId) {
-    return [];
-  }
-
-  const character = characters.find((item) => item.id === characterId);
-  if (!character) {
-    return [];
-  }
-
-  return [...character.history.filter((entry) => entry.worldId === worldId)].sort((a, b) => {
-    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-  });
 }
 
 function upsertWorld(worlds: World[], updated: World): World[] {

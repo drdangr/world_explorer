@@ -50,16 +50,29 @@ export interface Character {
   inventory: Item[];
   currentWorldId: WorldId | null;
   currentLocationId: LocationId | null;
-  history: SessionEntry[];
+  lastSessionFile: string | null;
+  lastSessionEntryId: SessionEntryId | null;
 }
 
 export interface SessionEntry {
   id: SessionEntryId;
-  worldId: WorldId;
   locationId: LocationId | null;
   author: "player" | "gm";
   message: string;
   createdAt: string;
+  actionSummary?: {
+    playerMessage: string;
+    gmResponse: string;
+    occurredAt: string;
+    locationId: LocationId | null;
+  };
+}
+
+export interface SessionLog {
+  worldId: WorldId;
+  characterId: CharacterId;
+  startedAt: string;
+  entries: SessionEntry[];
 }
 
 export interface WorldsFile {

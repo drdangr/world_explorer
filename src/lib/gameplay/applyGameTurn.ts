@@ -18,8 +18,6 @@ export interface ApplyGameTurnResult {
   newEntries: SessionEntry[];
 }
 
-const HISTORY_LIMIT = 200;
-
 export function applyGameTurn({
   world,
   character,
@@ -71,7 +69,6 @@ export function applyGameTurn({
   if (!isInitial && playerMessage.trim()) {
     entries.push({
       id: randomUUID(),
-      worldId: worldClone.id,
       locationId: previousLocationId,
       author: "player",
       message: playerMessage.trim(),
@@ -81,14 +78,28 @@ export function applyGameTurn({
 
   entries.push({
     id: randomUUID(),
-    worldId: worldClone.id,
     locationId: playerLocationNode.id,
     author: "gm",
     message: turn.narration,
     createdAt: new Date().toISOString(),
   });
 
-  characterClone.history = [...characterClone.history, ...entries].slice(-HISTORY_LIMIT);
+  const didMove = playerLocationNode.id !== previousLocationId;
+  const isAction = !isInitial && playerMessage.trim().length > 0 && !didMove;
+
+  if (isAction) {
+    for (let index = entries.length - 1; index >= 0; index -= 1) {
+      if (entries[index].author === "gm") {
+        entries[index].actionSummary = {
+          playerMessage: playerMessage.trim(),
+          gmResponse: turn.narration,
+          occurredAt: entries[index].createdAt,
+          locationId: entries[index].locationId,
+        };
+        break;
+      }
+    }
+  }
 
   return {
     world: worldClone,

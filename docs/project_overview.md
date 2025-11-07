@@ -87,12 +87,19 @@ interface Character {
   inventory: Item[];
   currentWorldId: WorldId | null;
   currentLocationId: LocationId | null;
-  history: SessionEntry[];
+  lastSessionFile: string | null;
+  lastSessionEntryId: SessionEntryId | null;
+}
+
+interface SessionLog {
+  worldId: WorldId;
+  characterId: CharacterId;
+  startedAt: string;
+  entries: SessionEntry[];
 }
 
 interface SessionEntry {
-  id: string;
-  worldId: WorldId;
+  id: SessionEntryId;
   locationId: LocationId;
   author: 'player' | 'gm';
   message: string;
@@ -115,9 +122,9 @@ interface SessionEntry {
 
 ## LLM‑интеграция
 
-- **Контекст запроса**: сеттинг/атмосфера/жанр мира, данные персонажа, текущая локация, компактный реестр известных локаций (`mapDescription` + связи) и до 12 последних реплик истории. В системную подсказку включено правило «используй точное название известной локации».
+- **Контекст запроса**: сеттинг/атмосфера/жанр мира, данные персонажа, текущая локация, компактный реестр известных локаций (`mapDescription` + связи) и до 12 последних реплик истории. В системную подсказку включено правило «используй точное название известной локации». При повторном входе в локацию планируется добавлять напоминание о последнем действии (`SessionEntry` из текущего `SessionLog`).
 - **Ответ LLM**: строгий JSON (`mapDescription`, `narration`, `playerLocation`, `discoveries`, `inventory`, `suggestions`), где `mapDescription` — сухая выжимка, а `narration` — художественный текст от первого лица.
-- **Обработка**: `applyGameTurn` нормализует имена локаций, обновляет `mapDescription`, синхронизирует предметы (с сохранением идентификаторов), добавляет новые связи и фиксирует историю. Новый узел сверяется не только по названию, но и по `mapDescription`, что исключает дубли («Бар Каменная Сопля», «Бар Каменная Сопля у входа» и т. п.).
+- **Обработка**: `applyGameTurn` нормализует имена локаций, обновляет `mapDescription`, синхронизирует предметы (с сохранением идентификаторов), добавляет новые связи и распределяет историю по файлам `sessions/`. Новый узел сверяется не только по названию, но и по `mapDescription`, что исключает дубли («Бар Каменная Сопля», «Бар Каменная Сопля у входа» и т. п.).
 - **Провайдеры**:
   - `GeminiProvider` — боевой режим (требует `GEMINI_API_KEY`).
   - `MockProvider` — офлайн‑заглушка: расширяет граф по сценариям (чёрный ход, кухня, улица и т. д.), обеспечивает стабильную работу без ключей.

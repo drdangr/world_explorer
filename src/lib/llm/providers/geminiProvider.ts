@@ -88,7 +88,7 @@ function buildSystemPrompt(): string {
 
 function buildUserPrompt(input: GenerateTurnInput): string {
   const { world, character, playerMessage, history, locationContext, isInitial } = input;
-  const { currentLocation, knownLocations } = locationContext;
+  const { currentLocation, knownLocations, lastActionReminder } = locationContext;
 
   const worldRegistry = buildWorldRegistry(currentLocation.id, knownLocations);
 
@@ -98,6 +98,10 @@ function buildUserPrompt(input: GenerateTurnInput): string {
     .join("\n");
 
   const currentConnections = formatConnections(currentLocation, knownLocations);
+
+  const reminderInstruction = lastActionReminder
+    ? `Помни: последнее заметное действие игрока здесь — "${lastActionReminder.playerMessage}". Тогда произошло: "${lastActionReminder.gmResponse}". Учитывай последствия.`
+    : null;
 
   const playerInstruction = isInitial
     ? "Это первый ход. Опиши вступление в центральную локацию, задай атмосферу и отметь хотя бы один возможный путь."
@@ -116,9 +120,12 @@ function buildUserPrompt(input: GenerateTurnInput): string {
       : "Из этой локации пока не выявлено путей.",
     worldRegistry ? `Карта известных локаций:\n${worldRegistry}` : "Это единственная исследованная локация сейчас.",
     recentHistory ? `Недавняя история:\n${recentHistory}` : "История пуста, это начало приключения.",
+    reminderInstruction,
     playerInstruction,
     JSON_FORMAT_INSTRUCTIONS,
-  ].join("\n\n");
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 const JSON_FORMAT_INSTRUCTIONS = `Форматируй ответ строго в JSON (без текста до или после). Структура:

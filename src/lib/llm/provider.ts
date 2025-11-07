@@ -10,6 +10,11 @@ export interface GenerateTurnInput {
   locationContext: {
     currentLocation: LocationNode;
     knownLocations: LocationNode[];
+    lastActionReminder?: {
+      playerMessage: string;
+      gmResponse: string;
+      occurredAt: string;
+    };
   };
   isInitial: boolean;
 }

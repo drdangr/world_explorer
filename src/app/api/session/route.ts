@@ -8,7 +8,14 @@ import {
   getCharacterById,
   saveCharacter,
 } from "@/lib/repository/characterRepository";
+import {
+  appendSessionEntries,
+  createSessionLog,
+  findLatestSessionFile,
+  readSessionLog,
+} from "@/lib/repository/sessionRepository";
 import { getWorldById, saveWorld } from "@/lib/repository/worldRepository";
+import type { LocationId, SessionEntry } from "@/types/game";
 
 const SessionRequestSchema = z.object({
   worldId: z.string().min(1),
@@ -30,9 +37,9 @@ export async function POST(request: Request) {
 
     const provider = getLLMProvider();
 
-    const history = character.history
-      .filter((entry) => entry.worldId === world.id)
-      .slice(-12);
+    const { sessionFile, sessionLog } = await resolveSessionLog(character, worldId);
+    const history = sessionLog.entries.slice(-12);
+    const lastActionReminder = findLastActionReminder(sessionLog.entries, currentLocation.id);
 
     const turn = await provider.generateTurn({
       world,
@@ -42,6 +49,7 @@ export async function POST(request: Request) {
       locationContext: {
         currentLocation,
         knownLocations,
+        lastActionReminder,
       },
       isInitial,
     });
@@ -56,12 +64,20 @@ export async function POST(request: Request) {
       isInitial,
     });
 
+    const updatedLog = await appendSessionEntries(sessionFile, sessionLog, newEntries);
+
+    updatedCharacter.lastSessionFile = sessionFile;
+    updatedCharacter.lastSessionEntryId = updatedLog.entries.at(-1)?.id ?? null;
+
     await Promise.all([saveWorld(updatedWorld), saveCharacter(updatedCharacter)]);
 
     return NextResponse.json({
       world: updatedWorld,
       character: updatedCharacter,
-      entries: newEntries,
+      session: {
+        file: sessionFile,
+        entries: updatedLog.entries,
+      },
       suggestions: parsedTurn.suggestions,
     });
   } catch (error) {
@@ -134,5 +150,47 @@ function resolveCurrentLocation(world: Awaited<ReturnType<typeof getWorldOrThrow
   }
 
   throw new NotFoundError("В мире отсутствуют локации");
+}
+
+async function resolveSessionLog(character: Awaited<ReturnType<typeof getCharacterOrThrow>>, worldId: string) {
+  const now = new Date().toISOString();
+
+  if (character.lastSessionFile) {
+    const existing = await readSessionLog(character.lastSessionFile);
+    if (existing && existing.worldId === worldId && existing.characterId === character.id) {
+      return {
+        sessionFile: character.lastSessionFile,
+        sessionLog: existing,
+      };
+    }
+  }
+
+  const latestFile = await findLatestSessionFile(character.id, worldId);
+  if (latestFile) {
+    const existing = await readSessionLog(latestFile);
+    if (existing) {
+      return {
+        sessionFile: latestFile,
+        sessionLog: existing,
+      };
+    }
+  }
+
+  const { fileName, log } = await createSessionLog(character.id, worldId, now, []);
+  return {
+    sessionFile: fileName,
+    sessionLog: log,
+  };
+}
+
+function findLastActionReminder(entries: SessionEntry[], locationId: LocationId) {
+  for (let index = entries.length - 1; index >= 0; index -= 1) {
+    const entry = entries[index];
+    if (entry.author === "gm" && entry.actionSummary && entry.actionSummary.locationId === locationId) {
+      return entry.actionSummary;
+    }
+  }
+
+  return null;
 }
 

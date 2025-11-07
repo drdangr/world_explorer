@@ -18,13 +18,13 @@ interface CharacterRow {
   inventory: Character["inventory"];
   current_world_id: WorldId | null;
   current_location_id: string | null;
-  history: Character["history"];
+  last_session_file: string | null;
+  last_session_entry_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
 const INVENTORY_FALLBACK: Character["inventory"] = [];
-const HISTORY_FALLBACK: Character["history"] = [];
 
 export async function sbGetCharacters(): Promise<Character[]> {
   const client = getSupabaseClient();
@@ -66,7 +66,8 @@ export async function sbCreateCharacter(payload: CreateCharacterPayload): Promis
     inventory: [],
     currentWorldId: payload.currentWorldId ?? null,
     currentLocationId: null,
-    history: [],
+    lastSessionFile: null,
+    lastSessionEntryId: null,
   };
 
   const client = getSupabaseClient();
@@ -77,7 +78,8 @@ export async function sbCreateCharacter(payload: CreateCharacterPayload): Promis
     inventory: character.inventory,
     current_world_id: character.currentWorldId,
     current_location_id: character.currentLocationId,
-    history: character.history,
+    last_session_file: character.lastSessionFile,
+    last_session_entry_id: character.lastSessionEntryId,
     created_at: now,
     updated_at: now,
   });
@@ -99,17 +101,23 @@ export async function sbUpdateCharacter(
     return undefined;
   }
 
+  const nextWorldId =
+    payload.currentWorldId === undefined ? current.currentWorldId : payload.currentWorldId ?? null;
+
+  const worldChanged = (current.currentWorldId ?? null) !== (nextWorldId ?? null);
+
   const updated: Character = {
     ...current,
     ...payload,
     name: payload.name?.trim() ?? current.name,
     description: payload.description?.trim() ?? current.description,
-    currentWorldId:
-      payload.currentWorldId === undefined ? current.currentWorldId : payload.currentWorldId,
+    currentWorldId: nextWorldId,
     currentLocationId:
       payload.currentLocationId === undefined
         ? current.currentLocationId
         : payload.currentLocationId,
+    lastSessionFile: worldChanged ? null : current.lastSessionFile,
+    lastSessionEntryId: worldChanged ? null : current.lastSessionEntryId,
   };
 
   const { error } = await client
@@ -120,6 +128,8 @@ export async function sbUpdateCharacter(
       inventory: updated.inventory,
       current_world_id: updated.currentWorldId,
       current_location_id: updated.currentLocationId,
+      last_session_file: updated.lastSessionFile,
+      last_session_entry_id: updated.lastSessionEntryId,
       updated_at: new Date().toISOString(),
     })
     .eq("id", characterId);
@@ -154,7 +164,8 @@ export async function sbSaveCharacter(character: Character): Promise<Character> 
         inventory: character.inventory,
         current_world_id: character.currentWorldId,
         current_location_id: character.currentLocationId,
-        history: character.history,
+        last_session_file: character.lastSessionFile,
+        last_session_entry_id: character.lastSessionEntryId,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "id" },
@@ -175,7 +186,8 @@ function mapCharacterRow(row: CharacterRow): Character {
     inventory: row.inventory ?? INVENTORY_FALLBACK,
     currentWorldId: row.current_world_id ?? null,
     currentLocationId: row.current_location_id ?? null,
-    history: row.history ?? HISTORY_FALLBACK,
+    lastSessionFile: row.last_session_file ?? null,
+    lastSessionEntryId: row.last_session_entry_id ?? null,
   } satisfies Character;
 }
 
