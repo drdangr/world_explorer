@@ -29,6 +29,8 @@ interface WorldModalState {
 export function Sidebar() {
   const worlds = useGameStore((state) => state.worlds);
   const currentWorldId = useGameStore((state) => state.currentWorldId);
+  const characters = useGameStore((state) => state.characters);
+  const currentCharacterId = useGameStore((state) => state.currentCharacterId);
   const error = useGameStore((state) => state.error);
   const isMutating = useGameStore((state) => state.isMutating);
   const actions = useGameStore((state) => state.actions);
@@ -36,6 +38,7 @@ export function Sidebar() {
   const [orderedWorldIds, setOrderedWorldIds] = useState<string[]>(() => worlds.map((world) => world.id));
   const [worldModal, setWorldModal] = useState<WorldModalState | null>(null);
   const [isCharacterModalOpen, setCharacterModalOpen] = useState(false);
+  const [inventoryExpanded, setInventoryExpanded] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -67,6 +70,11 @@ export function Sidebar() {
   const orderedWorlds = orderedWorldIds
     .map((id) => worldsById.get(id))
     .filter((item): item is World => Boolean(item));
+
+  const currentCharacter = useMemo(
+    () => characters.find((c) => c.id === currentCharacterId) ?? null,
+    [characters, currentCharacterId],
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -178,6 +186,44 @@ export function Sidebar() {
                 </ul>
               </SortableContext>
             </DndContext>
+          )}
+          {currentCharacter && (
+            <div className="border-t border-slate-800 px-4 py-3">
+              <button
+                type="button"
+                onClick={() => setInventoryExpanded((prev) => !prev)}
+                className="flex w-full items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white"
+              >
+                <span>Инвентарь</span>
+                <ChevronIcon className={`h-3 w-3 transition-transform ${inventoryExpanded ? 'rotate-180' : ''}`} />
+              </button>
+              {inventoryExpanded && (
+                <div className="mt-3">
+                  {currentCharacter.inventory.length === 0 ? (
+                    <p className="rounded border border-dashed border-slate-700 px-3 py-3 text-xs text-slate-400">
+                      Инвентарь пуст. Возьмите предмет в одной из локаций.
+                    </p>
+                  ) : (
+                    <ul className="flex flex-col gap-2">
+                      {currentCharacter.inventory.map((item) => (
+                        <li
+                          key={item.id}
+                          className="rounded border border-slate-800 bg-slate-950/60 px-3 py-2"
+                        >
+                          <p className="text-xs font-medium text-slate-100">{item.name}</p>
+                          <p className="mt-1 text-[10px] text-slate-400">
+                            {item.description || "Описание отсутствует"}
+                          </p>
+                          <p className="mt-1 text-[9px] uppercase tracking-wide text-slate-500">
+                            {item.portable ? "Переносимый" : "Нельзя взять"}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -353,6 +399,26 @@ function TrashIcon({ className }: IconProps) {
         d="M3.6 4.8h8.8M6.533 3.2h2.934M6 6.4v5.2m4-5.2v5.2M4.4 4.8l.32 7.68c.02.476.41.85.887.85h4.786c.477 0 .867-.374.886-.85l.321-7.68"
         stroke="currentColor"
         strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ChevronIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M4 6l4 4 4-4"
+        stroke="currentColor"
+        strokeWidth="1.6"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
