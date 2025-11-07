@@ -4,11 +4,26 @@
       "id": "9fdd7aba-8051-4e59-bba9-96544966d709",
       "name": "Тощий Пит",
       "description": "сотрудник Ночной Стражи, детектив, оборотень",
-      "inventory": [],
+      "inventory": [
+        {
+          "id": "7d6614e9-78b7-44dc-ab69-ae44b38b4b72",
+          "name": "клетка со злобным драконом",
+          "description": "содержит миниатюрного, но очень сердитого дракона",
+          "portable": true,
+          "ownerCharacterId": "9fdd7aba-8051-4e59-bba9-96544966d709"
+        },
+        {
+          "id": "c6de86bf-7117-4720-8f81-df19e7e36d8e",
+          "name": "хрустальный шар",
+          "description": "показывает странные видения",
+          "portable": true,
+          "ownerCharacterId": "9fdd7aba-8051-4e59-bba9-96544966d709"
+        }
+      ],
       "currentWorldId": "57139391-7778-4d99-87c5-28b0da45d1a0",
-      "currentLocationId": "f297a3e8-4f89-4eee-a8c6-27f9f91b8c8b",
+      "currentLocationId": "443b9263-052e-4a6e-9532-891cb34b4202",
       "lastSessionFile": "session__9fdd7aba-8051-4e59-bba9-96544966d709__57139391-7778-4d99-87c5-28b0da45d1a0__2025-11-07T101935223.json",
-      "lastSessionEntryId": "62eff588-56e9-4361-aa8a-2d24cbed1b6f"
+      "lastSessionEntryId": "9eb7847b-5993-4734-93a1-970bbbbda9c5"
     }
   ]
 }
