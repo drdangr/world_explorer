@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Background, Controls, ReactFlow } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import type { Edge, Node } from "@xyflow/react";
+import type { Edge, Node, OnNodesChange } from "@xyflow/react";
+import { applyNodeChanges } from "@xyflow/react";
 import {
   forceCenter,
   forceCollide,
@@ -43,6 +44,7 @@ const EDGE_TYPES = {
 
 export function GraphPanel() {
   const [layoutMode, setLayoutMode] = useState<"entry" | "player">("entry");
+  const [localNodes, setLocalNodes] = useState<Node[]>([]);
 
   const worlds = useGameStore((state) => state.worlds);
   const currentWorldId = useGameStore((state) => state.currentWorldId);
@@ -101,8 +103,17 @@ export function GraphPanel() {
       return {
         id: location.id,
         position,
+        draggable: true,
+        selectable: true,
+        className: 'draggable-node',
         data: {
-          label: location.locationName,
+          label: (
+            <div className="flex h-full w-full items-center justify-center px-2 text-center">
+              <span className="truncate text-[11px] font-medium" title={mapDescription}>
+                {location.locationName}
+              </span>
+            </div>
+          ),
           radius: NODE_RADIUS,
           mapDescription,
           isEntry,
@@ -139,6 +150,19 @@ export function GraphPanel() {
     return { nodes, edges: flowEdges };
   }, [currentWorld, layoutMode, playerLocationId]);
 
+  const onNodesChange: OnNodesChange = useCallback(
+    (changes) => {
+      setLocalNodes((nds) => applyNodeChanges(changes, nds));
+    },
+    [],
+  );
+
+  useEffect(() => {
+    setLocalNodes(nodes);
+  }, [nodes]);
+
+  const displayNodes = localNodes.length > 0 ? localNodes : nodes;
+
   return (
     <section className="flex h-full min-h-0 flex-1 flex-col bg-slate-950/20">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-4 py-3">
@@ -159,16 +183,21 @@ export function GraphPanel() {
       <div className="flex-1 min-h-0">
         {currentWorld && nodes.length > 0 ? (
           <ReactFlow
-            nodes={nodes}
+            nodes={displayNodes}
             edges={edges}
+            onNodesChange={onNodesChange}
             edgeTypes={EDGE_TYPES}
-            fitView
-            fitViewOptions={{ padding: 0.25 }}
+            defaultViewport={{ x: window.innerWidth * 0.15, y: window.innerHeight * 0.25, zoom: 0.7 }}
+            minZoom={0.2}
+            maxZoom={2}
             proOptions={{ hideAttribution: true }}
-            nodesDraggable={false}
+            nodesDraggable={true}
             nodesConnectable={false}
-            elementsSelectable={false}
-            className="graph-flow h-full bg-slate-950/30"
+            panOnScroll={true}
+            selectionOnDrag={false}
+            panOnDrag={[2]}
+            panActivationKeyCode="Space"
+            className="graph-flow h-full w-full bg-slate-950/30"
           >
             <Background color="rgba(148, 163, 184, 0.2)" gap={24} />
             <Controls showInteractive={false} position="bottom-right" />

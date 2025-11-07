@@ -20,16 +20,16 @@ export function WorldExplorerApp() {
 
   return (
     <div className="relative flex h-screen overflow-hidden bg-slate-950 text-slate-100">
-      <PanelGroup direction="horizontal" className="flex h-full w-full">
-        <Panel defaultSize={22} minSize={16} maxSize={32} className="flex h-full min-w-[16rem] max-w-md">
+      <PanelGroup direction="horizontal" className="flex h-full w-full" id="main-layout">
+        <Panel id="sidebar-panel" defaultSize={22} minSize={16} maxSize={32} className="flex h-full min-w-[16rem] max-w-md">
           <Sidebar />
         </Panel>
         <ResizeHandle />
-        <Panel defaultSize={48} minSize={32} className="flex h-full min-w-0">
+        <Panel id="chat-panel" defaultSize={48} minSize={32} className="flex h-full min-w-0">
           <ChatPanel />
         </Panel>
         <ResizeHandle />
-        <Panel defaultSize={30} minSize={20} maxSize={44} className="flex h-full min-w-0">
+        <Panel id="graph-panel" defaultSize={30} minSize={20} maxSize={44} className="flex h-full min-w-0">
           <GraphPanel />
         </Panel>
       </PanelGroup>

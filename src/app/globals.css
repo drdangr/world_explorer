@@ -33,3 +33,27 @@ body {
   transition: stroke 0.2s ease;
 }
 
+.graph-flow .react-flow__pane {
+  cursor: move;
+}
+
+.graph-flow .react-flow__node.draggable-node {
+  cursor: grab !important;
+  z-index: 10;
+  pointer-events: all !important;
+}
+
+.graph-flow .react-flow__node.draggable-node:hover {
+  z-index: 20;
+}
+
+.graph-flow .react-flow__node.draggable-node.dragging {
+  cursor: grabbing !important;
+  z-index: 1000;
+}
+
+.graph-flow .react-flow__node.draggable-node * {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
