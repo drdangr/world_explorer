@@ -110,6 +110,7 @@ function buildUserPrompt(input: GenerateTurnInput): string {
     `- Жанр: ${world.genre}`,
     `- Персонаж: ${character.name}. ${character.description}`,
     `Текущая локация героя: ${currentLocation.locationName}.`,
+    "Правило имён: если упоминаешь уже известную локацию, используй её точное название из раздела \"Карта известных локаций\" без добавления новых слов или уточнений.",
     currentConnections
       ? `Из этой локации видны пути: ${currentConnections.join("; ")}.`
       : "Из этой локации пока не выявлено путей.",

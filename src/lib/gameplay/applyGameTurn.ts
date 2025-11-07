@@ -107,9 +107,11 @@ function upsertLocationFromPayload(
   options: UpsertLocationOptions,
   fallbackMapDescription?: string | null,
 ): LocationNode {
-  const locationNode = ensureLocation(world, payload.name);
+  const locationNode = ensureLocation(world, payload.name, payload.mapDescription ?? null);
 
-  locationNode.locationName = payload.name;
+  if (normalize(locationNode.locationName) === normalize(payload.name)) {
+    locationNode.locationName = payload.name;
+  }
   locationNode.description = payload.description;
   locationNode.mapDescription = resolveMapDescription(
     payload.mapDescription,
@@ -125,14 +127,35 @@ function upsertLocationFromPayload(
   return locationNode;
 }
 
-function ensureLocation(world: World, name: string): LocationNode {
-  const normalized = normalize(name);
-  const existing = Object.values(world.graph).find(
-    (location) => normalize(location.locationName) === normalized,
+function ensureLocation(world: World, name: string, mapDescription?: string | null): LocationNode {
+  const normalizedName = normalize(name);
+
+  const byName = Object.values(world.graph).find(
+    (location) => normalize(location.locationName) === normalizedName,
   );
 
-  if (existing) {
-    return existing;
+  if (byName) {
+    return byName;
+  }
+
+  if (mapDescription) {
+    const normalizedMapDescription = normalize(mapDescription);
+
+    if (normalizedMapDescription.length > 0) {
+      const byMapDescription = Object.values(world.graph).find((location) => {
+        const locationMap = location.mapDescription ? normalize(location.mapDescription) : null;
+        const locationDescription = location.description ? normalize(location.description) : null;
+
+        return (
+          (locationMap && locationMap === normalizedMapDescription) ||
+          (locationDescription && locationDescription === normalizedMapDescription)
+        );
+      });
+
+      if (byMapDescription) {
+        return byMapDescription;
+      }
+    }
   }
 
   const id = randomUUID();
