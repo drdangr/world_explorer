@@ -5,12 +5,41 @@ import { useMemo, useState } from "react";
 import { Background, Controls, ReactFlow } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { Edge, Node } from "@xyflow/react";
+import {
+  forceCenter,
+  forceCollide,
+  forceLink,
+  forceManyBody,
+  forceRadial,
+  forceSimulation,
+} from "d3-force";
+import type { SimulationLinkDatum, SimulationNodeDatum } from "d3-force";
 
 import { useGameStore } from "@/store/gameStore";
 import type { LocationNode } from "@/types/game";
 
-const BASE_RADIUS = 180;
-const RADIUS_STEP = 220;
+import { CircleEdge } from "./CircleEdge";
+
+const NODE_RADIUS = 80;
+const FORCE_TICKS = 300;
+const FORCE_LINK_DISTANCE = 300;
+const FORCE_NODE_CHARGE = -1600;
+const FORCE_COLLISION_RADIUS = NODE_RADIUS + 50;
+
+interface ForceNode extends SimulationNodeDatum {
+  id: string;
+  depth: number;
+}
+
+interface ForceLink extends SimulationLinkDatum<ForceNode> {
+  source: string | ForceNode;
+  target: string | ForceNode;
+  bidirectional?: boolean;
+}
+
+const EDGE_TYPES = {
+  circle: CircleEdge,
+};
 
 export function GraphPanel() {
   const [layoutMode, setLayoutMode] = useState<"entry" | "player">("entry");
@@ -58,8 +87,8 @@ export function GraphPanel() {
 
     const centerId = layoutMode === "player" ? playerCenterId : entryCenterId;
 
-    const adjacency = buildAdjacencyMap(locations);
-    const positions = computeRadialPositions(locations, adjacency, centerId);
+    const { flowEdges, links } = buildEdges(locations, layoutMode);
+    const positions = runForceLayout(locations, links, centerId);
 
     const nodes: Node[] = locations.map((location) => {
       const isEntry = location.id === currentWorld.entryLocationId;
@@ -73,28 +102,41 @@ export function GraphPanel() {
         id: location.id,
         position,
         data: {
-          label: (
-            <div className="truncate" title={mapDescription}>
-              {location.locationName}
-            </div>
-          ),
+          label: location.locationName,
+          radius: NODE_RADIUS,
+          mapDescription,
+          isEntry,
+          isPlayerHere,
         },
         style: {
-          borderRadius: 12,
-          border: isPlayerHere ? "2px solid #34d399" : "1px solid rgba(148, 163, 184, 0.3)",
-          padding: 12,
-          background: isEntry ? "rgba(59,130,246,0.12)" : "rgba(30,41,59,0.6)",
+          width: NODE_RADIUS * 2,
+          height: NODE_RADIUS * 2,
+          borderRadius: "50%",
+          border: isPlayerHere 
+            ? "3px solid #34d399" 
+            : isEntry 
+            ? "2px solid rgba(59,130,246,0.6)" 
+            : "1.5px solid rgba(148, 163, 184, 0.4)",
+          padding: 0,
+          background: isEntry 
+            ? "linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(30,41,59,0.8) 100%)" 
+            : "rgba(30,41,59,0.7)",
           color: "rgba(226,232,240,1)",
-          minWidth: 160,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 11,
+          fontWeight: 500,
           textAlign: "center" as const,
-          fontSize: 12,
+          overflow: "hidden",
+          boxShadow: isPlayerHere 
+            ? "0 0 20px rgba(52, 211, 153, 0.4)" 
+            : "0 2px 8px rgba(0,0,0,0.3)",
         },
       } satisfies Node;
     });
 
-    const edges = buildEdges(locations, layoutMode);
-
-    return { nodes, edges };
+    return { nodes, edges: flowEdges };
   }, [currentWorld, layoutMode, playerLocationId]);
 
   return (
@@ -119,12 +161,14 @@ export function GraphPanel() {
           <ReactFlow
             nodes={nodes}
             edges={edges}
+            edgeTypes={EDGE_TYPES}
             fitView
-            fitViewOptions={{ padding: 0.2 }}
+            fitViewOptions={{ padding: 0.25 }}
             proOptions={{ hideAttribution: true }}
             nodesDraggable={false}
             nodesConnectable={false}
-            className="h-full bg-slate-950/30"
+            elementsSelectable={false}
+            className="graph-flow h-full bg-slate-950/30"
           >
             <Background color="rgba(148, 163, 184, 0.2)" gap={24} />
             <Controls showInteractive={false} position="bottom-right" />
@@ -142,7 +186,11 @@ export function GraphPanel() {
   );
 }
 
-function buildAdjacencyMap(locations: LocationNode[]) {
+function runForceLayout(
+  locations: LocationNode[],
+  links: ForceLink[],
+  centerId: string | null,
+) {
   const adjacency = new Map<string, Set<string>>();
 
   for (const location of locations) {
@@ -151,49 +199,27 @@ function buildAdjacencyMap(locations: LocationNode[]) {
     }
 
     for (const connection of location.connections) {
-      if (!adjacency.has(connection.targetId)) {
-        adjacency.set(connection.targetId, new Set());
-      }
-
       adjacency.get(location.id)!.add(connection.targetId);
-      adjacency.get(connection.targetId)!.add(location.id);
+      if (connection.bidirectional) {
+        if (!adjacency.has(connection.targetId)) {
+          adjacency.set(connection.targetId, new Set());
+        }
+        adjacency.get(connection.targetId)!.add(location.id);
+      }
     }
   }
 
-  return adjacency;
-}
-
-function computeRadialPositions(
-  locations: LocationNode[],
-  adjacency: Map<string, Set<string>>,
-  centerId: string | null,
-) {
-  const positions = new Map<string, { x: number; y: number }>();
-
-  if (locations.length === 0) {
-    return positions;
-  }
-
-  const fallbackId = locations[0].id;
+  const fallbackId = locations[0]?.id ?? "";
   const rootId = centerId && adjacency.has(centerId) ? centerId : fallbackId;
 
-  const rings: string[][] = [];
+  const depths = new Map<string, number>();
   const visited = new Set<string>();
-  const queue: Array<{ id: string; depth: number }> = [];
-
-  const enqueue = (id: string, depth: number) => {
-    queue.push({ id, depth });
-    visited.add(id);
-  };
-
-  enqueue(rootId, 0);
+  const queue: Array<{ id: string; depth: number }> = [{ id: rootId, depth: 0 }];
+  visited.add(rootId);
 
   while (queue.length > 0) {
     const { id, depth } = queue.shift()!;
-    if (!rings[depth]) {
-      rings[depth] = [];
-    }
-    rings[depth]!.push(id);
+    depths.set(id, depth);
 
     const neighbors = adjacency.get(id);
     if (!neighbors) {
@@ -202,83 +228,71 @@ function computeRadialPositions(
 
     for (const neighbor of neighbors) {
       if (!visited.has(neighbor)) {
-        enqueue(neighbor, depth + 1);
+        visited.add(neighbor);
+        queue.push({ id: neighbor, depth: depth + 1 });
       }
     }
   }
 
-  const knownIds = new Set(locations.map((location) => location.id));
-
-  for (const locationId of knownIds) {
-    if (!visited.has(locationId)) {
-      const startDepth = rings.length === 0 ? 0 : rings.length;
-      const componentQueue: Array<{ id: string; depth: number }> = [
-        { id: locationId, depth: startDepth },
-      ];
-      visited.add(locationId);
-
-      while (componentQueue.length > 0) {
-        const { id, depth } = componentQueue.shift()!;
-        if (!rings[depth]) {
-          rings[depth] = [];
-        }
-        rings[depth]!.push(id);
-
-        const neighbors = adjacency.get(id);
-        if (!neighbors) {
-          continue;
-        }
-
-        for (const neighbor of neighbors) {
-          if (!visited.has(neighbor)) {
-            visited.add(neighbor);
-            componentQueue.push({ id: neighbor, depth: depth + 1 });
-          }
-        }
-      }
+  for (const location of locations) {
+    if (!depths.has(location.id)) {
+      depths.set(location.id, 999);
     }
   }
 
-  rings.forEach((ring, depth) => {
-    if (ring.length === 0) {
-      return;
+  const simNodes: ForceNode[] = locations.map((location) => ({
+    id: location.id,
+    depth: depths.get(location.id) ?? 999,
+  }));
+
+  const linkForce = forceLink<ForceNode, ForceLink>(links)
+    .id((node) => node.id)
+    .distance((link) =>
+      link.bidirectional ? FORCE_LINK_DISTANCE * 0.85 : FORCE_LINK_DISTANCE,
+    )
+    .strength(1.0);
+
+  const simulation = forceSimulation<ForceNode>(simNodes)
+    .force("charge", forceManyBody().strength(FORCE_NODE_CHARGE))
+    .force("link", linkForce)
+    .force("collision", forceCollide<ForceNode>().radius(FORCE_COLLISION_RADIUS))
+    .force("center", forceCenter(0, 0))
+    .force(
+      "radial",
+      forceRadial<ForceNode>()
+        .radius((node) => node.depth * FORCE_LINK_DISTANCE * 0.7)
+        .strength(0.5),
+    );
+
+  if (centerId) {
+    const centerNode = simNodes.find((node) => node.id === centerId);
+    if (centerNode) {
+      centerNode.fx = 0;
+      centerNode.fy = 0;
     }
+  }
 
-    if (depth === 0) {
-      const center = ring[0];
-      positions.set(center, { x: 0, y: 0 });
+  for (let index = 0; index < FORCE_TICKS; index += 1) {
+    simulation.tick();
+  }
 
-      if (ring.length > 1) {
-        for (let index = 1; index < ring.length; index += 1) {
-          const angle = (2 * Math.PI * index) / ring.length - Math.PI / 2;
-          positions.set(ring[index], {
-            x: Math.cos(angle) * (BASE_RADIUS * 0.5),
-            y: Math.sin(angle) * (BASE_RADIUS * 0.5),
-          });
-        }
-      }
-      return;
-    }
+  simulation.stop();
 
-    const nodeCount = ring.length;
-    const radius = BASE_RADIUS + (depth - 1) * RADIUS_STEP + Math.max(0, nodeCount - 6) * 20;
-    const angleOffset = -Math.PI / 2;
-
-    ring.forEach((id, index) => {
-      const angle = (2 * Math.PI * index) / nodeCount + angleOffset;
-      positions.set(id, {
-        x: Math.cos(angle) * radius,
-        y: Math.sin(angle) * radius,
-      });
+  const positions = new Map<string, { x: number; y: number }>();
+  simNodes.forEach((node) => {
+    positions.set(node.id, {
+      x: (node.x ?? 0) - NODE_RADIUS,
+      y: (node.y ?? 0) - NODE_RADIUS,
     });
   });
 
   return positions;
 }
 
-function buildEdges(locations: LocationNode[], layoutMode: "entry" | "player"): Edge[] {
+function buildEdges(locations: LocationNode[], layoutMode: "entry" | "player") {
   const edgeSet = new Set<string>();
-  const edges: Edge[] = [];
+  const flowEdges: Edge[] = [];
+  const links: ForceLink[] = [];
 
   locations.forEach((location) => {
     location.connections.forEach((connection) => {
@@ -291,21 +305,32 @@ function buildEdges(locations: LocationNode[], layoutMode: "entry" | "player"): 
       }
 
       edgeSet.add(key);
-      edges.push({
+      flowEdges.push({
         id: key,
         source: location.id,
         target: connection.targetId,
+        type: "circle",
         label: connection.label,
-        style: {
-          stroke: "rgba(148, 163, 184, 0.4)",
+        data: {
+          bidirectional: connection.bidirectional,
+          radius: NODE_RADIUS,
         },
-        markerEnd: connection.bidirectional ? undefined : "arrowclosed",
-        animated: layoutMode === "player" && connection.bidirectional === false,
+        style: {
+          stroke: "rgba(148, 163, 184, 0.5)",
+          strokeWidth: 2,
+        },
+        animated: layoutMode === "player" && !connection.bidirectional,
+      });
+
+      links.push({
+        source: location.id,
+        target: connection.targetId,
+        bidirectional: connection.bidirectional,
       });
     });
   });
 
-  return edges;
+  return { flowEdges, links };
 }
 
 interface LayoutSwitcherProps {
@@ -358,7 +383,7 @@ function LayoutSwitcher({ value, onChange, playerModeDisabled }: LayoutSwitcherP
         className={`flex h-8 w-8 items-center justify-center rounded-full border text-slate-300 transition ${
           value === "player"
             ? "border-emerald-400/70 bg-emerald-400/10 text-emerald-200"
-            : "border-сlate-700 bg-сlate-900 hover:border-сlate-500 hover:text-white"
+            : "border-slate-700 bg-slate-900 hover:border-slate-500 hover:text-white"
         } ${playerModeDisabled ? "opacity-40" : ""}`}
         aria-label="Центрировать по позиции персонажа"
         disabled={playerModeDisabled}

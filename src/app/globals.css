@@ -24,3 +24,12 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.graph-flow .react-flow__handle {
+  display: none;
+}
+
+.graph-flow .react-flow__edge-path {
+  transition: stroke 0.2s ease;
+}
+
