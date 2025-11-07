@@ -24,6 +24,10 @@ export const LocationPayloadSchema = z.object({
     .string()
     .min(1, "Название локации обязательно")
     .transform((value) => value.trim()),
+  mapDescription: z
+    .string()
+    .optional()
+    .transform((value) => value?.trim() ?? ""),
   description: z
     .string()
     .min(1, "Описание локации обязательно")
@@ -39,6 +43,10 @@ export const LLMGameTurnSchema = z.object({
     .string()
     .min(1, "Нужно описание сцены")
     .transform((value) => value.trim()),
+  mapDescription: z
+    .string()
+    .optional()
+    .transform((value) => value?.trim() ?? ""),
   suggestions: z
     .array(z.string().min(1).transform((value) => value.trim()))
     .default([]),

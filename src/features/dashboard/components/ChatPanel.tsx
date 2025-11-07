@@ -27,20 +27,14 @@ export function ChatPanel() {
     [characters, currentCharacterId],
   );
 
+  const currentLocationNode =
+    currentWorld?.graph[
+      currentCharacter?.currentLocationId ?? currentWorld.entryLocationId
+    ] ?? null;
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  const resolveLocationName = useMemo(() => {
-    if (!currentWorld) {
-      return () => "Неизвестная локация";
-    }
-
-    return (locationId: string | null | undefined) =>
-      locationId && currentWorld.graph?.[locationId]
-        ? currentWorld.graph[locationId].locationName
-        : "Неизвестная локация";
-  }, [currentWorld]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -68,6 +62,13 @@ export function ChatPanel() {
               <p>Атмосфера: {currentWorld.atmosphere}</p>
               <p>Жанр: {currentWorld.genre}</p>
             </div>
+            {currentLocationNode?.mapDescription && (
+              <p className="mt-2 text-xs text-slate-400">
+                Текущая локация:{" "}
+                <span className="text-slate-200">{currentLocationNode.locationName}</span>.{" "}
+                <span className="text-slate-300">{currentLocationNode.mapDescription}</span>
+              </p>
+            )}
           </div>
         ) : (
           <div className="text-sm text-slate-400">
@@ -105,14 +106,21 @@ export function ChatPanel() {
                 const locationChanged =
                   locationId !== null && locationId !== lastLocationId && message.author === "gm";
                 lastLocationId = locationId ?? lastLocationId;
+                const locationNode =
+                  locationId && currentWorld ? currentWorld.graph[locationId] ?? null : null;
 
                 return (
                   <Fragment key={message.id}>
                     {locationChanged && (
-                      <div className="flex justify-center">
+                      <div className="flex flex-col items-center gap-1 text-center">
                         <span className="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-wide text-emerald-200">
-                          Локация: {resolveLocationName(locationId)}
+                          Локация: {locationNode?.locationName ?? "Неизвестно"}
                         </span>
+                        {locationNode?.mapDescription && (
+                          <span className="max-w-md text-[11px] text-slate-400">
+                            {locationNode.mapDescription}
+                          </span>
+                        )}
                       </div>
                     )}
                     <li

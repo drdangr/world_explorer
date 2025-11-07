@@ -30,6 +30,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
   let narration = composeNarration(world, currentLocation, playerMessage, isInitial);
   let playerLocation: LocationPayload = {
     name: currentLocation.locationName,
+    mapDescription: getExistingMapDescription(currentLocation),
     description: ensureDescription(world, currentLocation),
     items: currentLocation.items.map((item) => ({
       name: item.name,
@@ -45,12 +46,13 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
     if (playerLocation.exits.length === 0) {
       const defaultStreet: LocationPayload = {
         name: DEFAULT_EXIT_NAME,
+        mapDescription: "Площадка перед парадным входом в заведение.",
         description: `Улица, ведущая прочь из ${currentLocation.locationName.toLowerCase()}.`,
         items: [],
         exits: [
           {
             name: currentLocation.locationName,
-            label: "Вернуться внутрь",
+            label: DEFAULT_EXIT_LABEL,
             bidirectional: true,
           },
         ],
@@ -68,6 +70,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
   } else if (lowerMessage.includes("черн")) {
     const alley: LocationPayload = {
       name: "Улица за чёрным ходом",
+      mapDescription: "Узкий служебный проход позади заведения, пахнет сыростью и металлом.",
       description:
         "Я выскальзываю через чёрный ход и оказываюсь в узком переулке, пахнущем сыростью и старым металлом.",
       items: [],
@@ -87,6 +90,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
 
     discoveries.push({
       name: "Тёмный переулок",
+      mapDescription: "Ночная улочка между складами, откуда тянет холодом и неприятными звуками.",
       description: "В глубине слышны отдалённые шаги, а стены покрыты влажным мхом.",
       items: [],
       exits: [
@@ -107,6 +111,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
   } else if (lowerMessage.includes("кух")) {
     const kitchen: LocationPayload = {
       name: "Кухня",
+      mapDescription: "Кухня заведения с жаровнями и шумом поваров.",
       description:
         "Я протискиваюсь на кухню: горячий пар, запах жареного мяса и суета поваров мгновенно накрывают меня.",
       items: [
@@ -132,6 +137,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
 
     discoveries.push({
       name: "Улица за чёрным ходом",
+      mapDescription: "Служебная улочка за заведением, ведущая к мусорным бакам и складам.",
       description: "Чёрный ход ведёт к неприметной двери во двор, где редко кто появляется.",
       items: [],
       exits: [
@@ -155,6 +161,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
     if (exit) {
       const sideAlley: LocationPayload = {
         name: "Тёмный переулок",
+        mapDescription: "Тёмный переулок с влажными стенами и шумом далёких шагов.",
         description:
           "Я замечаю узкий переулок, уходящий в темноту. В лужах отражается неоновый отблеск вывесок, а где-то внутри слышится шорох.",
         items: [],
@@ -174,6 +181,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
 
       const alchemistYard: LocationPayload = {
         name: "Задний двор лавки алхимика",
+        mapDescription: "Дворик лавки алхимика: травы, колбы и полумрак.",
         description:
           "Во дворе пахнет травами и серой, на верёвке сушатся пучки неизвестных растений. Дверь в лавку чуть приоткрыта.",
         items: [
@@ -196,6 +204,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
 
       playerLocation = {
         name: exit.name,
+        mapDescription: `Подход к ${exit.name.toLowerCase()}, отсюда виден вход в заведение.`,
         description: `Я выхожу к ${exit.name.toLowerCase()} и на мгновение щурюсь от света.`,
         items: [],
         exits: [
@@ -237,6 +246,7 @@ function buildMockTurn(input: GenerateTurnInput): LLMGameTurn {
 
   return {
     narration,
+    mapDescription: playerLocation.mapDescription ?? "",
     suggestions,
     playerLocation,
     discoveries,
@@ -494,6 +504,7 @@ function toLocationPayloadFromWorld(
 ): LocationPayload {
   return {
     name: location.locationName,
+    mapDescription: getExistingMapDescription(location),
     description:
       location.description ??
       `Я оказываюсь в ${location.locationName.toLowerCase()} и стараюсь запомнить каждую деталь.`,
@@ -510,5 +521,15 @@ function toLocationPayloadFromWorld(
       bidirectional: connection.bidirectional,
     })),
   };
+}
+
+function getExistingMapDescription(
+  location:
+    | GenerateTurnInput["locationContext"]["currentLocation"]
+    | GenerateTurnInput["locationContext"]["knownLocations"][number],
+): string {
+  const raw = (location as { mapDescription?: string | null }).mapDescription ?? location.description ?? "";
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : "Описание не задано.";
 }
 

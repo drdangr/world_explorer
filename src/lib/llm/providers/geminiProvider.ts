@@ -1,5 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+import { jsonrepair } from "jsonrepair";
+
+import { DEFAULT_EXIT_LABEL } from "@/lib/gameplay/constants";
+
 import type { GenerateTurnInput, LLMProvider } from "../provider";
 import { LLMGameTurnSchema, type LLMGameTurn } from "../types";
 
@@ -32,7 +36,7 @@ export class GeminiProvider implements LLMProvider {
   async generateTurn(input: GenerateTurnInput): Promise<LLMGameTurn> {
     const prompt = buildUserPrompt(input);
 
-    const response = await this.model.generateContent({
+    const result = await this.model.generateContent({
       contents: [
         {
           role: "user",
@@ -47,18 +51,38 @@ export class GeminiProvider implements LLMProvider {
       },
     });
 
-    const text = response.response.text();
-    return parseGameTurn(text);
+    const response = result.response;
+    const candidates = response.candidates ?? [];
+
+    const raw = candidates
+      .flatMap((candidate) => candidate.content?.parts ?? [])
+      .map((part) => {
+        if ("text" in part && typeof part.text === "string") {
+          return part.text;
+        }
+        return "";
+      })
+      .join("\n")
+      .trim();
+
+    if (!raw) {
+      console.error("Gemini вернул пустой ответ:", JSON.stringify(response, null, 2));
+      throw new Error("Gemini вернул пустой ответ");
+    }
+
+    return parseGameTurn(raw);
   }
 }
 
 function buildSystemPrompt(): string {
   return [
-    "Ты — ведущий интерактивного текстового приключения. Ты играешь роль Гейм-мастера и описываешь события в форме внутреннего монолога персонажа игрока (1-е лицо).",
-    "Всегда следуй сеттингу, жанру и атмосфере мира. Описывай сцену, предметы, звуки и запахи так, будто герой их воспринимает напрямую.",
-    "Отвечай кратко, но образно. Максимум 5-6 предложений в `narration`. Не перечисляй механические подробности, если их можно показать через ощущения героя.",
-    "Фокусируйся на логике мира. Если действие игрока невозможно, опиши последствия и предложи альтернативы, но все равно предоставь итоговое `playerLocation`.",
-    "Всегда возвращай ответ строго в формате JSON без пояснений, комментариев и текста вне JSON.",
+    "Ты выступаешь в роли Гейм-мастера интерактивного приключения.",
+    "Опиши мир так, будто наблюдаешь его глазами персонажа игрока, соблюдая заданные сеттинг, атмосферу и жанр.",
+    "В `narration` используй художественный стиль от первого лица: запахи, звуки, ощущения, реакции героя.",
+    "Одновременно формируй сухое, краткое `mapDescription` — 1‑2 предложения без эмоциональной окраски, чтобы хранить его в карте мира.",
+    "Если игрок уже бывал в локации, используй сохранённый `mapDescription` как основу, но можешь варьировать литературную подачу в `narration`.",
+    "Если локация новая, придумай `mapDescription`, предметы и потенциальные выходы, логично продолжая мир.",
+    "Всегда возвращай ответ строго в формате JSON без дополнительного текста.",
   ].join("\n");
 }
 
@@ -66,50 +90,31 @@ function buildUserPrompt(input: GenerateTurnInput): string {
   const { world, character, playerMessage, history, locationContext, isInitial } = input;
   const { currentLocation, knownLocations } = locationContext;
 
-  const knownLocationsText = knownLocations
-    .map((location) => {
-      const exits = location.connections
-        .map((connection) => {
-          const targetName = findLocationName(knownLocations, connection.targetId) ?? "Неизвестно";
-          return `- ${targetName}${connection.label ? ` (${connection.label})` : ""}`;
-        })
-        .join("\n");
-
-      const header = `${location.locationName}${location.id === currentLocation.id ? " (текущая)" : ""}`;
-      const description = location.description ?? "Описание ещё не создано";
-
-      return [header, description, exits ? `Выходы:\n${exits}` : "Выходы пока неизвестны"].join("\n");
-    })
-    .join("\n\n");
+  const worldRegistry = buildWorldRegistry(currentLocation.id, knownLocations);
 
   const recentHistory = history
     .slice(-HISTORY_LIMIT)
     .map((entry) => `${entry.author === "player" ? "Игрок" : "ГМ"}: ${entry.message}`)
     .join("\n");
 
-  const currentConnections = currentLocation.connections
-    .map((connection) => {
-      const targetName = findLocationName(knownLocations, connection.targetId) ?? "Неизвестно";
-      const suffix = connection.label ? ` (${connection.label})` : "";
-      return `${targetName}${suffix}`;
-    })
-    .join(", ");
+  const currentConnections = formatConnections(currentLocation, knownLocations);
 
   const playerInstruction = isInitial
     ? "Это первый ход. Опиши вступление в центральную локацию, задай атмосферу и отметь хотя бы один возможный путь."
     : `Игрок сообщил: "${playerMessage}". Проанализируй это действие, опиши результат и при необходимости расширь мир.`;
 
   return [
-    `Сеттинг: ${world.setting}`,
-    `Атмосфера: ${world.atmosphere}`,
-    `Жанр: ${world.genre}`,
-    `Персонаж игрока: ${character.name}. ${character.description}`,
-    `Текущая локация героя: ${currentLocation.locationName}. Описание: ${currentLocation.description ?? "ещё не описана"}.`,
+    "Установки мира и героя:",
+    `- Сеттинг: ${world.setting}`,
+    `- Атмосфера: ${world.atmosphere}`,
+    `- Жанр: ${world.genre}`,
+    `- Персонаж: ${character.name}. ${character.description}`,
+    `Текущая локация героя: ${currentLocation.locationName}.`,
     currentConnections
-      ? `Из этой локации уже известны пути: ${currentConnections}.`
-      : "Пути из текущей локации ещё не описаны.",
-    knownLocationsText ? `Известные локации:\n${knownLocationsText}` : "Это единственная исследованная локация сейчас.",
-    recentHistory ? `Предыдущие реплики:\n${recentHistory}` : "История пуста, это начало приключения.",
+      ? `Из этой локации видны пути: ${currentConnections.join("; ")}.`
+      : "Из этой локации пока не выявлено путей.",
+    worldRegistry ? `Карта известных локаций:\n${worldRegistry}` : "Это единственная исследованная локация сейчас.",
+    recentHistory ? `Недавняя история:\n${recentHistory}` : "История пуста, это начало приключения.",
     playerInstruction,
     JSON_FORMAT_INSTRUCTIONS,
   ].join("\n\n");
@@ -118,23 +123,28 @@ function buildUserPrompt(input: GenerateTurnInput): string {
 const JSON_FORMAT_INSTRUCTIONS = `Форматируй ответ строго в JSON (без текста до или после). Структура:
 {
   "narration": "описание событий для игрока",
+  "mapDescription": "краткое жёсткое описание текущей локации без эмоций",
   "suggestions": ["краткие идеи следующих действий"],
   "playerLocation": {
     "name": "название конечной локации, куда попал герой",
-    "description": "описание от лица героя",
+    "mapDescription": "сухое описание для карты",
+    "description": "литературное описание для чата от 1-го лица",
     "items": [
       { "name": "название предмета", "description": "в чём ценность", "portable": true }
     ],
     "exits": [
-      { "name": "название соседней локации", "label": "как герой воспринимает путь", "bidirectional": true }
+      { "name": "название соседней локации", "label": "фраза-команда (например, \\"${DEFAULT_EXIT_LABEL}\\")", "bidirectional": true }
     ]
   },
   "discoveries": [
     {
       "name": "новая локация или уточнённая",
-      "description": "краткое описание, если герой туда заглянул",
+      "mapDescription": "сухое описание для карты",
+      "description": "литературное описание, если герой кратко заглянул или ощутил новинку",
       "items": [],
-      "exits": []
+      "exits": [
+        { "name": "название потенциальной локации", "label": "фраза-команда", "bidirectional": true }
+      ]
     }
   ],
   "inventory": {
@@ -151,11 +161,20 @@ function parseGameTurn(raw: string): LLMGameTurn {
   try {
     parsed = JSON.parse(candidate);
   } catch (error) {
-    throw new Error(`Gemini вернул некорректный JSON: ${(error as Error).message}`);
+    console.error("Не удалось распарсить ответ Gemini. Исходные данные:", candidate);
+
+    try {
+      parsed = JSON.parse(jsonrepair(candidate));
+    } catch (repairError) {
+      throw new Error(
+        `Gemini вернул некорректный JSON: ${(error as Error).message}; jsonrepair: ${(repairError as Error).message}`,
+      );
+    }
   }
 
   const result = LLMGameTurnSchema.safeParse(parsed);
   if (!result.success) {
+    console.error("Ответ Gemini не соответствует схеме. Исходные данные:", candidate);
     throw new Error(`Gemini прислал JSON, не соответствующий схеме: ${result.error.message}`);
   }
 
@@ -178,5 +197,49 @@ function extractJson(text: string): string {
 
 function findLocationName(locations: GenerateTurnInput["locationContext"]["knownLocations"], id: string): string | undefined {
   return locations.find((location) => location.id === id)?.locationName;
+}
+
+type CurrentLocation = GenerateTurnInput["locationContext"]["currentLocation"];
+type KnownLocation = GenerateTurnInput["locationContext"]["knownLocations"][number];
+
+function getMapDescription(location: CurrentLocation | KnownLocation): string {
+  const candidate = (location as { mapDescription?: string | null }).mapDescription;
+  if (candidate && candidate.trim().length > 0) {
+    return candidate.trim();
+  }
+
+  return location.description ?? "Описание отсутствует";
+}
+
+function buildWorldRegistry(currentLocationId: string, locations: GenerateTurnInput["locationContext"]["knownLocations"]): string {
+  if (locations.length === 0) {
+    return "";
+  }
+
+  const limited = locations.slice(0, 12);
+
+  return limited
+    .map((location) => {
+      const header = `${location.locationName}${location.id === currentLocationId ? " (текущая)" : ""}`;
+      const mapDesc = getMapDescription(location);
+      const exits = formatConnections(location, locations)
+        .map((entry) => `    - ${entry}`)
+        .join("\n");
+
+      return [`• ${header}`, `  Описание: ${mapDesc}`, exits ? `  Пути:\n${exits}` : "  Пути: (нет данных)"].join("\n");
+    })
+    .join("\n\n");
+}
+
+function formatConnections(location: CurrentLocation | KnownLocation, knownLocations: GenerateTurnInput["locationContext"]["knownLocations"]): string[] {
+  if (!location.connections.length) {
+    return [];
+  }
+
+  return location.connections.map((connection) => {
+    const targetName = findLocationName(knownLocations, connection.targetId) ?? "Неизвестно";
+    const label = connection.label?.trim() || DEFAULT_EXIT_LABEL;
+    return `${label} ${targetName}`;
+  });
 }
 

@@ -33,14 +33,23 @@ export function applyGameTurn({
   const previousLocationId =
     characterClone.currentLocationId ?? worldClone.entryLocationId ?? null;
 
-  const playerLocationNode = upsertLocationFromPayload(worldClone, turn.playerLocation, {
-    discovered: true,
-  });
+  const playerLocationNode = upsertLocationFromPayload(
+    worldClone,
+    turn.playerLocation,
+    {
+      discovered: true,
+    },
+    turn.mapDescription,
+  );
 
   turn.discoveries.forEach((location) => {
-    upsertLocationFromPayload(worldClone, location, {
-      discovered: false,
-    });
+    upsertLocationFromPayload(
+      worldClone,
+      location,
+      {
+        discovered: false,
+      },
+    );
   });
 
   characterClone.currentWorldId = worldClone.id;
@@ -96,11 +105,18 @@ function upsertLocationFromPayload(
   world: World,
   payload: LocationPayload,
   options: UpsertLocationOptions,
+  fallbackMapDescription?: string | null,
 ): LocationNode {
   const locationNode = ensureLocation(world, payload.name);
 
   locationNode.locationName = payload.name;
   locationNode.description = payload.description;
+  locationNode.mapDescription = resolveMapDescription(
+    payload.mapDescription,
+    fallbackMapDescription,
+    locationNode.mapDescription,
+    locationNode.description,
+  );
   locationNode.discovered = locationNode.discovered || options.discovered;
   locationNode.items = mergeItems(locationNode.items, payload.items, null);
 
@@ -124,6 +140,7 @@ function ensureLocation(world: World, name: string): LocationNode {
     id,
     locationName: name,
     description: null,
+    mapDescription: null,
     discovered: false,
     items: [],
     connections: [],
@@ -195,5 +212,25 @@ function mergeItems(
 
 function normalize(value: string): string {
   return value.trim().toLowerCase();
+}
+
+function resolveMapDescription(
+  primary?: string | null,
+  ...fallbacks: Array<string | null | undefined>
+): string | null {
+  const all = [primary, ...fallbacks];
+
+  for (const candidate of all) {
+    if (!candidate) {
+      continue;
+    }
+
+    const trimmed = candidate.trim();
+    if (trimmed.length > 0) {
+      return trimmed;
+    }
+  }
+
+  return null;
 }
 

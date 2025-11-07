@@ -22,6 +22,7 @@ export interface LocationNode {
   id: LocationId;
   locationName: string;
   description: string | null;
+  mapDescription: string | null;
   discovered: boolean;
   items: Item[];
   connections: Connection[];

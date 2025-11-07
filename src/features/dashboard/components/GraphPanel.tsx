@@ -47,10 +47,16 @@ export function GraphPanel() {
         currentCharacter?.currentLocationId === location.id ||
         (!currentCharacter?.currentLocationId && isEntry);
 
+      const mapDescription = location.mapDescription ?? "Описание ещё не задано.";
+
       return {
         id: location.id,
         data: {
-          label: location.locationName,
+          label: (
+            <div className="truncate" title={mapDescription}>
+              {location.locationName}
+            </div>
+          ),
         },
         position: {
           x: column * layoutGapX,
