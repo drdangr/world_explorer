@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import type { Edge, Node, OnNodesChange, ReactFlowInstance } from "@xyflow/react";
+import type { Edge, Node, OnNodesChange, ReactFlowInstance, Viewport } from "@xyflow/react";
 import { applyNodeChanges } from "@xyflow/react";
 import { useGameStore } from "@/store/gameStore";
 import type { LocationNode } from "@/types/game";
@@ -42,6 +42,14 @@ export function GraphPanel() {
     links: GraphLink[];
     options: GraphLayoutOptions;
   } | null>(null);
+  type SavedGraphState = {
+    positions: Map<string, { x: number; y: number }>;
+    viewport?: Viewport;
+  };
+
+  const savedGraphStateRef = useRef<
+    Map<string, { entry: SavedGraphState; player: SavedGraphState }>
+  >(new Map());
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
@@ -122,6 +130,59 @@ export function GraphPanel() {
     [containerSize.height, containerSize.width],
   );
 
+  const ensureSavedState = useCallback(
+    () => {
+      if (!currentWorldId) {
+        return undefined;
+      }
+      let worldState = savedGraphStateRef.current.get(currentWorldId);
+      if (!worldState) {
+        worldState = {
+          entry: { positions: new Map() },
+          player: { positions: new Map() },
+        };
+        savedGraphStateRef.current.set(currentWorldId, worldState);
+      }
+      return worldState;
+    },
+    [currentWorldId],
+  );
+
+  const savePositions = useCallback(() => {
+    if (!engineRef.current) {
+      return;
+    }
+    const worldState = ensureSavedState();
+    if (!worldState) {
+      return;
+    }
+    const positions = engineRef.current.getNodePositions();
+    const cloned = new Map(positions);
+    worldState[layoutMode].positions = cloned;
+  }, [ensureSavedState, layoutMode]);
+
+  const saveViewport = useCallback(
+    (viewport?: Viewport) => {
+      if (!viewport) {
+        return;
+      }
+      const worldState = ensureSavedState();
+      if (!worldState) {
+        return;
+      }
+      worldState[layoutMode].viewport = viewport;
+    },
+    [ensureSavedState, layoutMode],
+  );
+
+  const getSavedState = useCallback(() => {
+    const worldState = ensureSavedState();
+    if (!worldState) {
+      return undefined;
+    }
+    return worldState[layoutMode];
+  }, [ensureSavedState, layoutMode]);
+
   // Основной пересчёт графа при изменении данных/режима
   useEffect(() => {
     if (!currentWorld) {
@@ -184,41 +245,70 @@ export function GraphPanel() {
     }
 
     engine.onTick(mapLayoutToNodes);
-    engine.onSimulationEnd(mapLayoutToNodes);
+    engine.onSimulationEnd((nodes) => {
+      mapLayoutToNodes(nodes);
+      savePositions();
+      const viewport = reactFlowInstanceRef.current?.getViewport?.();
+      if (viewport) {
+        saveViewport(viewport);
+      }
+    });
 
     latestGraphDataRef.current = { nodes: layoutNodes, links, options };
-    engine.updateGraph(layoutNodes, links, options);
+    const savedState = getSavedState();
+    engine.updateGraph(layoutNodes, links, options, savedState?.positions);
+    savePositions();
   }, [
     currentWorld,
     layoutMode,
     playerLocationId,
     containerSize,
     mapLayoutToNodes,
+    savePositions,
+    getSavedState,
+    saveViewport,
   ]);
 
-  const performFitView = useCallback(() => {
-    if (!reactFlowInstanceRef.current || flowNodes.length === 0) {
-      return;
-    }
-
-    if (fitViewTimeoutRef.current !== null) {
-      cancelAnimationFrame(fitViewTimeoutRef.current);
-    }
-
-    fitViewTimeoutRef.current = requestAnimationFrame(() => {
-      try {
-        reactFlowInstanceRef.current?.fitView({
-          padding: 0.16,
-          duration: 200,
-          maxZoom: 1.0,
-          minZoom: 0.25,
-        });
-      } catch (error) {
-        console.warn("fitView failed", error);
+  const performFitView = useCallback(
+    (allowSavedViewport = true) => {
+      if (!reactFlowInstanceRef.current || flowNodes.length === 0) {
+        return;
       }
-      fitViewTimeoutRef.current = null;
-    });
-  }, [flowNodes.length]);
+
+      if (allowSavedViewport) {
+        const savedState = getSavedState();
+        if (savedState?.viewport) {
+          reactFlowInstanceRef.current.setViewport(savedState.viewport, { duration: 180 });
+          return;
+        }
+      }
+
+      if (fitViewTimeoutRef.current !== null) {
+        cancelAnimationFrame(fitViewTimeoutRef.current);
+      }
+
+      fitViewTimeoutRef.current = requestAnimationFrame(() => {
+        try {
+          reactFlowInstanceRef.current?.fitView({
+            padding: 0.16,
+            duration: 200,
+            maxZoom: 1.0,
+            minZoom: 0.25,
+          });
+          setTimeout(() => {
+            const viewport = reactFlowInstanceRef.current?.getViewport?.();
+            if (viewport) {
+              saveViewport(viewport);
+            }
+          }, 140);
+        } catch (error) {
+          console.warn("fitView failed", error);
+        }
+        fitViewTimeoutRef.current = null;
+      });
+    },
+    [flowNodes.length, getSavedState, saveViewport],
+  );
 
   // Центровка при смене режима и после обновления графа
   useEffect(() => {
@@ -230,7 +320,7 @@ export function GraphPanel() {
   // Отслеживаем изменение размера
   useEffect(() => {
     if (hasInitializedRef.current && reactFlowInstanceRef.current && flowNodes.length > 0) {
-      performFitView();
+      performFitView(false);
     }
   }, [containerSize, flowNodes.length, performFitView]);
 
@@ -252,11 +342,16 @@ export function GraphPanel() {
           } else {
             engineRef.current?.setNodePosition(change.id, cx, cy, false);
             engineRef.current?.releaseNode(change.id);
+            savePositions();
+            const viewport = reactFlowInstanceRef.current?.getViewport?.();
+            if (viewport) {
+              saveViewport(viewport);
+            }
           }
         }
       });
     },
-    [],
+    [savePositions, saveViewport],
   );
 
   const onInit = useCallback((instance: ReactFlowInstance) => {
@@ -274,12 +369,14 @@ export function GraphPanel() {
     const engine = engineRef.current;
     const graphData = latestGraphDataRef.current;
     if (engine && graphData) {
-      engine.updateGraph(graphData.nodes, graphData.links, graphData.options);
+      const savedState = getSavedState();
+      engine.updateGraph(graphData.nodes, graphData.links, graphData.options, savedState?.positions);
+      savePositions();
       setTimeout(() => {
         performFitView();
       }, 120);
     }
-  }, [performFitView]);
+  }, [performFitView, getSavedState, savePositions]);
 
   return (
     <section className="flex h-full min-h-0 flex-1 flex-col bg-slate-950/20">
@@ -320,6 +417,7 @@ export function GraphPanel() {
             onInit={onInit}
             nodeTypes={NODE_TYPES}
             edgeTypes={EDGE_TYPES}
+            onMoveEnd={(_, viewport) => saveViewport(viewport)}
             minZoom={0.2}
             maxZoom={2}
             proOptions={{ hideAttribution: true }}

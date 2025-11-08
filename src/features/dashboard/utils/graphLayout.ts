@@ -28,11 +28,11 @@ export interface GraphLayoutOptions {
   width: number;
   height: number;
   centerNodeId?: string; // ID центральной ноды для радиального размещения
-  nodeRadius?: number;
-  linkDistance?: number;
-  chargeStrength?: number;
-  radialStrength?: number;
-  centerStrength?: number;
+  nodeRadius: number;
+  linkDistance: number;
+  chargeStrength: number;
+  radialStrength: number;
+  centerStrength: number;
   animationDuration?: number;
 }
 
@@ -137,7 +137,8 @@ export class GraphLayoutEngine {
   public updateGraph(
     nodes: GraphNode[],
     links: GraphLink[],
-    options?: Partial<GraphLayoutOptions>
+    options?: Partial<GraphLayoutOptions>,
+    initialPositions?: Map<string, { x: number; y: number }>
   ) {
     if (options) {
       this.options = { ...this.options, ...options };
@@ -192,6 +193,10 @@ export class GraphLayoutEngine {
     const linkForce = this.simulation.force("link");
     if (linkForce) {
       linkForce.links(this.links);
+    }
+
+    if (initialPositions && initialPositions.size > 0) {
+      this.applyPositions(initialPositions);
     }
 
     // Перезапуск симуляции
@@ -266,6 +271,8 @@ export class GraphLayoutEngine {
       if (pos) {
         node.x = pos.x;
         node.y = pos.y;
+        node.vx = 0;
+        node.vy = 0;
         // Можно также зафиксировать позицию
         // node.fx = pos.x;
         // node.fy = pos.y;
