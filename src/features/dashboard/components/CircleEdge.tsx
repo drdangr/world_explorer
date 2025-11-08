@@ -57,28 +57,43 @@ export function CircleEdge(props: EdgeProps) {
     ? "react-flow__edge-path react-flow__edge-path-animated"
     : "react-flow__edge-path";
 
-  const arrowId = `arrow-${id}`;
+  const endMarkerId = `edge-end-${id}`;
+  const startMarkerId = `edge-start-${id}`;
+  const arrowColor = "rgba(148, 163, 184, 0.6)";
 
   return (
     <>
       <defs>
         <marker
-          id={arrowId}
-          viewBox="0 0 10 10"
-          refX="8"
-          refY="5"
-          markerWidth="6"
-          markerHeight="6"
-          orient="auto-start-reverse"
+          id={endMarkerId}
+          viewBox="0 0 12 12"
+          refX="10"
+          refY="6"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto"
         >
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(148, 163, 184, 0.6)" />
+          <path d="M 0 0 L 12 6 L 0 12 z" fill={arrowColor} />
         </marker>
+        {bidirectional && (
+          <marker
+            id={startMarkerId}
+            viewBox="0 0 12 12"
+            refX="2"
+            refY="6"
+            markerWidth="7"
+            markerHeight="7"
+            orient="auto"
+          >
+            <path d="M 12 0 L 0 6 L 12 12 z" fill={arrowColor} />
+          </marker>
+        )}
       </defs>
       <BaseEdge
         id={id}
         path={path}
-        markerStart={bidirectional ? `url(#${arrowId})` : undefined}
-        markerEnd={`url(#${arrowId})`}
+        markerStart={bidirectional ? `url(#${startMarkerId})` : undefined}
+        markerEnd={`url(#${endMarkerId})`}
         style={style}
         className={edgeClassName}
         interactionWidth={interactionWidth}
@@ -138,10 +153,15 @@ function getLabelStyle(
 }
 
 function getNodeCenter(node: Node, radius: number) {
-  const position = node.positionAbsolute ?? node.position ?? { x: 0, y: 0 };
+  // Используем positionAbsolute если доступно, иначе position
+  const position = node.positionAbsolute || node.position || { x: 0, y: 0 };
+  // Для кастомных нод ширина/высота может быть в node.width/height или в style
+  const nodeWidth = node.width || radius * 2;
+  const nodeHeight = node.height || radius * 2;
+  
   return {
-    x: position.x + radius,
-    y: position.y + radius,
+    x: position.x + nodeWidth / 2,
+    y: position.y + nodeHeight / 2,
   };
 }
 

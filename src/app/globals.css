@@ -57,3 +57,46 @@ body {
   user-select: none !important;
 }
 
+/* React Flow Edge styles - force visibility */
+.react-flow__edge-path {
+  stroke: rgba(148, 163, 184, 0.5);
+  stroke-width: 2;
+}
+
+.react-flow__edge {
+  pointer-events: all;
+}
+
+.react-flow__edge-text {
+  fill: #e2e8f0;
+  font-size: 11px;
+}
+
+.react-flow__edge.animated .react-flow__edge-path {
+  animation: dashdraw 0.5s linear infinite;
+  stroke-dasharray: 5;
+}
+
+/* Стили для мини-карты */
+.minimap-custom {
+  background-color: rgba(15, 23, 42, 0.95) !important; /* slate-950 */
+  border: 1px solid rgba(51, 65, 85, 0.8) !important; /* slate-700 */
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+  width: 200px !important;
+  height: 150px !important;
+  z-index: 10 !important;
+}
+
+.minimap-custom .react-flow__minimap-mask {
+  fill: rgba(15, 23, 42, 0.4) !important; /* slate-950 */
+  stroke: rgba(16, 185, 129, 0.8) !important; /* emerald-500 */
+  stroke-width: 2px !important;
+  stroke-dasharray: 5 5 !important;
+}
+
+/* Убираем дефолтный фон для нод в мини-карте */
+.react-flow__minimap-node {
+  cursor: pointer !important;
+}
+
