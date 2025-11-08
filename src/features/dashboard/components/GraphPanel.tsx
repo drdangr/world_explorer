@@ -47,9 +47,9 @@ export function GraphPanel() {
     viewport?: Viewport;
   };
 
-  const savedGraphStateRef = useRef<
-    Map<string, { entry: SavedGraphState; player: SavedGraphState }>
-  >(new Map());
+const savedGraphStateRef = useRef<
+  Map<string, { entry: SavedGraphState; player: SavedGraphState }>
+>(new Map());
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
@@ -270,7 +270,7 @@ export function GraphPanel() {
   ]);
 
   const performFitView = useCallback(
-    (allowSavedViewport = true) => {
+    (allowSavedViewport = true, options?: { padding?: number }) => {
       if (!reactFlowInstanceRef.current || flowNodes.length === 0) {
         return;
       }
@@ -290,10 +290,11 @@ export function GraphPanel() {
       fitViewTimeoutRef.current = requestAnimationFrame(() => {
         try {
           reactFlowInstanceRef.current?.fitView({
-            padding: 0.16,
+            padding: options?.padding ?? 0.2,
             duration: 200,
-            maxZoom: 1.0,
-            minZoom: 0.25,
+            maxZoom: 1.2,
+            minZoom: 0.08,
+            includeHiddenNodes: true,
           });
           setTimeout(() => {
             const viewport = reactFlowInstanceRef.current?.getViewport?.();
@@ -378,6 +379,48 @@ export function GraphPanel() {
     }
   }, [performFitView, getSavedState, savePositions]);
 
+  const handleFitAll = useCallback(() => {
+    performFitView(false, { padding: 0.18 });
+  }, [performFitView]);
+
+  const handleCenterOnActiveNode = useCallback(() => {
+    const instance = reactFlowInstanceRef.current;
+    if (!instance || flowNodes.length === 0 || !currentWorld) {
+      return;
+    }
+
+    const activeNodeId = layoutMode === "player"
+      ? (playerLocationId && currentWorld.graph[playerLocationId] ? playerLocationId : currentWorld.entryLocationId)
+      : currentWorld.entryLocationId;
+
+    if (!activeNodeId) {
+      return;
+    }
+
+    const nodes = instance.getNodes?.() ?? [];
+    const node = nodes.find((n) => n.id === activeNodeId) ?? flowNodes.find((n) => n.id === activeNodeId);
+    if (!node) {
+      return;
+    }
+
+    const viewport = instance.getViewport?.();
+    const zoom = viewport?.zoom ?? 1;
+    const pos = node.positionAbsolute ?? node.position;
+    const width = node.width ?? NODE_RADIUS * 2;
+    const height = node.height ?? NODE_RADIUS * 2;
+
+    const centerX = (pos?.x ?? 0) + width / 2;
+    const centerY = (pos?.y ?? 0) + height / 2;
+
+    instance.setCenter(centerX, centerY, { zoom, duration: 220, easing: (t) => t });
+    setTimeout(() => {
+      const updated = instance.getViewport?.();
+      if (updated) {
+        saveViewport(updated);
+      }
+    }, 240);
+  }, [currentWorld, flowNodes, layoutMode, playerLocationId, saveViewport]);
+
   return (
     <section className="flex h-full min-h-0 flex-1 flex-col bg-slate-950/20">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-4 py-3">
@@ -390,6 +433,18 @@ export function GraphPanel() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-full border border-slate-800 bg-slate-900/80 px-2 py-1">
+            <ActionIconButton
+              onClick={handleFitAll}
+              icon={FitAllIcon}
+              ariaLabel="Уместить граф целиком"
+            />
+            <ActionIconButton
+              onClick={handleCenterOnActiveNode}
+              icon={CenterIcon}
+              ariaLabel="Центрировать на текущей ноде"
+            />
+          </div>
           <LayoutSwitcher
             value={layoutMode}
             onChange={setLayoutMode}
@@ -399,7 +454,7 @@ export function GraphPanel() {
             <button
               type="button"
               onClick={handleRelayout}
-              className="flex h-8 items-center gap-1.5 rounded border border-slate-700 bg-slate-900 px-2.5 text-xs font-medium text-slate-300 transition hover:border-emerald-400/60 hover:text-emerald-200"
+              className="flex h-8 items-center gap-1.5 rounded border border-slate-700 bg-slate-900 px-2.5 text-xs font-medium text-slate-300 transition hover:border-emerald-400/60 hover:text-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
               aria-label="Разровнять граф"
             >
               <LayoutIcon className="h-3.5 w-3.5" />
@@ -418,7 +473,7 @@ export function GraphPanel() {
             nodeTypes={NODE_TYPES}
             edgeTypes={EDGE_TYPES}
             onMoveEnd={(_, viewport) => saveViewport(viewport)}
-            minZoom={0.2}
+            minZoom={0.08}
             maxZoom={2}
             proOptions={{ hideAttribution: true }}
             nodesDraggable={true}
@@ -639,6 +694,72 @@ function LayoutIcon({ className }: IconProps) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+interface ActionIconButtonProps {
+  onClick: () => void;
+  icon: (props: IconProps) => JSX.Element;
+  ariaLabel: string;
+}
+
+function ActionIconButton({ onClick, icon: Icon, ariaLabel }: ActionIconButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-300 transition hover:border-emerald-400/60 hover:text-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+      aria-label={ariaLabel}
+    >
+      <Icon className="h-4 w-4" />
+    </button>
+  );
+}
+
+function FitAllIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M4.5 2h-2v2.5M15.5 2h2v2.5M4.5 18h-2v-2.5M15.5 18h2v-2.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M5 5h3M12 5h3M5 15h3M12 15h3M5 8v4M15 8v4"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+      <rect x="7" y="7" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
+function CenterIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.4" strokeDasharray="3 2" />
+      <path
+        d="M10 3v2M10 15v2M3 10h2M15 10h2"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+      <circle cx="10" cy="10" r="2.3" stroke="currentColor" strokeWidth="1.4" />
     </svg>
   );
 }
