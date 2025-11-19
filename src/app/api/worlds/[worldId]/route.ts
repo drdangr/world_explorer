@@ -8,13 +8,14 @@ import {
 import type { UpdateWorldPayload } from "@/types/game";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     worldId: string;
-  };
+  }>;
 }
 
 export async function GET(_: Request, { params }: RouteParams) {
-  const world = await getWorldById(params.worldId);
+  const { worldId } = await params;
+  const world = await getWorldById(worldId);
 
   if (!world) {
     return NextResponse.json({ error: "Мир не найден" }, { status: 404 });
@@ -25,8 +26,9 @@ export async function GET(_: Request, { params }: RouteParams) {
 
 export async function PATCH(request: Request, { params }: RouteParams) {
   try {
+    const { worldId } = await params;
     const payload = (await request.json()) as Partial<UpdateWorldPayload>;
-    const world = await updateWorld(params.worldId, payload);
+    const world = await updateWorld(worldId, payload);
 
     if (!world) {
       return NextResponse.json({ error: "Мир не найден" }, { status: 404 });
@@ -43,7 +45,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 }
 
 export async function DELETE(_: Request, { params }: RouteParams) {
-  const deleted = await deleteWorld(params.worldId);
+  const { worldId } = await params;
+  const deleted = await deleteWorld(worldId);
 
   if (!deleted) {
     return NextResponse.json({ error: "Мир не найден" }, { status: 404 });

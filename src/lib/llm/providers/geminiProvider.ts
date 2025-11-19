@@ -113,6 +113,10 @@ function buildUserPrompt(input: GenerateTurnInput): string {
     `- Атмосфера: ${world.atmosphere}`,
     `- Жанр: ${world.genre}`,
     `- Персонаж: ${character.name}. ${character.description}`,
+    `- Инвентарь: ${character.inventory.length > 0
+      ? character.inventory.map((item) => `${item.name} (${item.description})`).join(", ")
+      : "пуст"
+    }`,
     `Текущая локация героя: ${currentLocation.locationName}.`,
     "Правило имён: если упоминаешь уже известную локацию, используй её точное название из раздела \"Карта известных локаций\" без добавления новых слов или уточнений.",
     currentConnections

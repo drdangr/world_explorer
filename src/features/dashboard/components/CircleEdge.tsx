@@ -2,6 +2,8 @@
 
 import type { CSSProperties } from "react";
 
+import { memo } from "react";
+
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -11,7 +13,7 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 
-export function CircleEdge(props: EdgeProps) {
+function CircleEdgeComponent(props: EdgeProps) {
   const {
     id,
     source,
@@ -120,6 +122,8 @@ export function CircleEdge(props: EdgeProps) {
   );
 }
 
+export const CircleEdge = memo(CircleEdgeComponent);
+
 function getLabelStyle(
   x: number,
   y: number,
@@ -154,11 +158,12 @@ function getLabelStyle(
 
 function getNodeCenter(node: Node, radius: number) {
   // Используем positionAbsolute если доступно, иначе position
-  const position = node.positionAbsolute || node.position || { x: 0, y: 0 };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const position = (node as any).positionAbsolute || node.position || { x: 0, y: 0 };
   // Для кастомных нод ширина/высота может быть в node.width/height или в style
   const nodeWidth = node.width || radius * 2;
   const nodeHeight = node.height || radius * 2;
-  
+
   return {
     x: position.x + nodeWidth / 2,
     y: position.y + nodeHeight / 2,

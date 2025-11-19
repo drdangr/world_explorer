@@ -107,6 +107,11 @@ export async function updateWorld(
         updatedAt: new Date().toISOString(),
       };
 
+      // Explicitly handle graph update if present in payload
+      if (payload.graph) {
+        updatedWorld.graph = payload.graph;
+      }
+
       return updatedWorld;
     });
 

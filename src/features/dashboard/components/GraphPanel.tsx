@@ -1,5 +1,6 @@
 "use client";
 
+import type { MouseEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
@@ -17,10 +18,12 @@ import {
 
 import { CircleEdge } from "./CircleEdge";
 import { CircleNode } from "./CircleNode";
+import { GraphContextMenu } from "./GraphContextMenu";
+import { LocationSettingsModal } from "./LocationSettingsModal";
 
 const NODE_RADIUS = 80;
-const FORCE_LINK_DISTANCE = 260;
-const FORCE_NODE_CHARGE = -1400;
+const FORCE_LINK_DISTANCE = 400;
+const FORCE_NODE_CHARGE = -2500;
 
 const NODE_TYPES = {
   circle: CircleNode,
@@ -36,6 +39,11 @@ export function GraphPanel() {
   const [flowEdges, setFlowEdges] = useState<Edge[]>([]);
   const [containerSize, setContainerSize] = useState({ width: 1024, height: 768 });
 
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(
+    null,
+  );
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
+
   const engineRef = useRef<GraphLayoutEngine | null>(null);
   const latestGraphDataRef = useRef<{
     nodes: LayoutNode[];
@@ -47,9 +55,9 @@ export function GraphPanel() {
     viewport?: Viewport;
   };
 
-const savedGraphStateRef = useRef<
-  Map<string, { entry: SavedGraphState; player: SavedGraphState }>
->(new Map());
+  const savedGraphStateRef = useRef<
+    Map<string, { entry: SavedGraphState; player: SavedGraphState }>
+  >(new Map());
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
@@ -62,6 +70,7 @@ const savedGraphStateRef = useRef<
   const currentWorldId = useGameStore((state) => state.currentWorldId);
   const characters = useGameStore((state) => state.characters);
   const currentCharacterId = useGameStore((state) => state.currentCharacterId);
+  const updateWorld = useGameStore((state) => state.actions.updateWorld);
 
   const currentWorld = useMemo(
     () => worlds.find((world) => world.id === currentWorldId) ?? null,
@@ -244,7 +253,16 @@ const savedGraphStateRef = useRef<
       engineRef.current = engine;
     }
 
-    engine.onTick(mapLayoutToNodes);
+    let lastTick = 0;
+    const TICK_THROTTLE = 32; // ~30 FPS
+
+    engine.onTick((nodes) => {
+      const now = performance.now();
+      if (now - lastTick > TICK_THROTTLE) {
+        mapLayoutToNodes(nodes);
+        lastTick = now;
+      }
+    });
     engine.onSimulationEnd((nodes) => {
       mapLayoutToNodes(nodes);
       savePositions();
@@ -421,6 +439,190 @@ const savedGraphStateRef = useRef<
     }, 240);
   }, [currentWorld, flowNodes, layoutMode, playerLocationId, saveViewport]);
 
+  const onNodeContextMenu = useCallback(
+    (event: MouseEvent, node: Node) => {
+      event.preventDefault();
+      const pane = containerRef.current?.getBoundingClientRect();
+      const instance = reactFlowInstanceRef.current;
+
+      if (!pane || !instance) return;
+
+      // Используем координаты ноды для позиционирования меню
+      // node.positionAbsolute - это координаты внутри ReactFlow
+      // Нам нужно перевести их в экранные координаты, а затем в координаты относительно контейнера
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const nodeX = (node as any).positionAbsolute?.x ?? node.position.x;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const nodeY = (node as any).positionAbsolute?.y ?? node.position.y;
+
+      // Центр ноды
+      const centerX = nodeX + NODE_RADIUS;
+      const centerY = nodeY + NODE_RADIUS;
+
+      const screenPos = instance.flowToScreenPosition({ x: centerX, y: centerY });
+
+      setContextMenu({
+        x: screenPos.x - pane.left,
+        y: screenPos.y - pane.top,
+        nodeId: node.id,
+      });
+    },
+    [],
+  );
+
+  const handleCloseContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  const handleContextAction = useCallback(
+    async (action: "edit" | "delete") => {
+      const nodeId = contextMenu?.nodeId;
+      handleCloseContextMenu();
+
+      if (!nodeId || !currentWorld) return;
+
+      if (action === "edit") {
+        setEditingNodeId(nodeId);
+      } else if (action === "delete") {
+        if (nodeId === currentWorld.entryLocationId) {
+          alert("Нельзя удалить стартовую локацию!");
+          return;
+        }
+
+        if (confirm("Вы уверены, что хотите удалить эту локацию? Это действие необратимо.")) {
+          const newGraph = { ...currentWorld.graph };
+          delete newGraph[nodeId];
+
+          // Удаляем связи, ведущие к этой ноде
+          Object.values(newGraph).forEach((node) => {
+            node.connections = node.connections.filter((conn) => conn.targetId !== nodeId);
+          });
+
+          await updateWorld(currentWorld.id, { graph: newGraph });
+        }
+      }
+    },
+    [contextMenu, currentWorld, handleCloseContextMenu, updateWorld],
+  );
+
+  const handleSaveLocation = useCallback(
+    async (
+      name: string,
+      mapDescription: string,
+      newConnectionTargetId?: string,
+      deletedConnectionIds?: string[],
+    ) => {
+      if (!editingNodeId || !currentWorld) return;
+
+      const node = currentWorld.graph[editingNodeId];
+      if (!node) return;
+
+      let updatedNode: LocationNode = {
+        ...node,
+        locationName: name,
+        mapDescription: mapDescription,
+      };
+
+      let newGraph = {
+        ...currentWorld.graph,
+        [editingNodeId]: updatedNode,
+      };
+
+      // Handle deleted connections
+      if (deletedConnectionIds && deletedConnectionIds.length > 0) {
+        deletedConnectionIds.forEach((connId) => {
+          const connection = updatedNode.connections.find((c) => c.id === connId);
+          if (!connection) return;
+
+          // Remove from current node
+          updatedNode.connections = updatedNode.connections.filter((c) => c.id !== connId);
+
+          // Remove from target node (bidirectional)
+          const targetNode = newGraph[connection.targetId];
+          if (targetNode) {
+            const updatedTargetNode = {
+              ...targetNode,
+              connections: targetNode.connections.filter((c) => c.targetId !== editingNodeId),
+            };
+            newGraph[connection.targetId] = updatedTargetNode;
+          }
+        });
+        newGraph[editingNodeId] = updatedNode;
+      }
+
+      // Handle new connection if selected
+      if (newConnectionTargetId && newConnectionTargetId !== editingNodeId) {
+        const targetNode = newGraph[newConnectionTargetId];
+        if (targetNode) {
+          // Check if connection already exists
+          const connectionExists = updatedNode.connections.some(
+            (c) => c.targetId === newConnectionTargetId,
+          );
+
+          if (!connectionExists) {
+            // Add connection to current node
+            const newConnectionId = crypto.randomUUID();
+            updatedNode = {
+              ...updatedNode,
+              connections: [
+                ...updatedNode.connections,
+                {
+                  id: newConnectionId,
+                  targetId: newConnectionTargetId,
+                  label: "перейти в",
+                  bidirectional: true,
+                },
+              ],
+            };
+
+            // Add connection to target node (bidirectional)
+            const targetConnectionId = crypto.randomUUID();
+            const updatedTargetNode = {
+              ...targetNode,
+              connections: [
+                ...targetNode.connections,
+                {
+                  id: targetConnectionId,
+                  targetId: editingNodeId,
+                  label: "перейти в",
+                  bidirectional: true,
+                },
+              ],
+            };
+
+            newGraph = {
+              ...newGraph,
+              [editingNodeId]: updatedNode,
+              [newConnectionTargetId]: updatedTargetNode,
+            };
+          }
+        }
+      }
+
+      await updateWorld(currentWorld.id, { graph: newGraph });
+      setEditingNodeId(null);
+    },
+    [editingNodeId, currentWorld, updateWorld],
+  );
+
+  const editingNode = editingNodeId && currentWorld ? currentWorld.graph[editingNodeId] : null;
+
+  const availableLocations = useMemo(() => {
+    if (!currentWorld || !editingNodeId) return [];
+    return Object.values(currentWorld.graph)
+      .filter((node) => node.id !== editingNodeId)
+      .map((node) => ({ id: node.id, name: node.locationName }));
+  }, [currentWorld, editingNodeId]);
+
+  const existingConnections = useMemo(() => {
+    if (!currentWorld || !editingNode) return [];
+    return editingNode.connections.map((conn) => ({
+      id: conn.id,
+      targetName: currentWorld.graph[conn.targetId]?.locationName ?? "Неизвестно",
+      label: conn.label,
+    }));
+  }, [currentWorld, editingNode]);
+
   return (
     <section className="flex h-full min-h-0 flex-1 flex-col bg-slate-950/20">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-4 py-3">
@@ -463,12 +665,14 @@ const savedGraphStateRef = useRef<
           )}
         </div>
       </header>
-      <div ref={containerRef} className="flex-1 min-h-0">
+      <div ref={containerRef} className="relative flex-1 min-h-0">
         {currentWorld && flowNodes.length > 0 ? (
           <ReactFlow
             nodes={flowNodes}
             edges={flowEdges}
             onNodesChange={onNodesChange}
+            onNodeContextMenu={onNodeContextMenu}
+            onPaneClick={handleCloseContextMenu}
             onInit={onInit}
             nodeTypes={NODE_TYPES}
             edgeTypes={EDGE_TYPES}
@@ -510,7 +714,28 @@ const savedGraphStateRef = useRef<
             </span>
           </div>
         )}
+
+        {contextMenu && (
+          <GraphContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            onClose={handleCloseContextMenu}
+            onAction={handleContextAction}
+          />
+        )}
       </div>
+
+      {editingNode && (
+        <LocationSettingsModal
+          open={Boolean(editingNode)}
+          onClose={() => setEditingNodeId(null)}
+          locationName={editingNode.locationName}
+          mapDescription={editingNode.mapDescription ?? ""}
+          availableLocations={availableLocations}
+          existingConnections={existingConnections}
+          onSave={handleSaveLocation}
+        />
+      )}
     </section>
   );
 }
@@ -591,11 +816,10 @@ function LayoutSwitcher({ value, onChange, playerModeDisabled }: LayoutSwitcherP
       <button
         type="button"
         onClick={() => onChange("entry")}
-        className={`flex h-8 w-8 items-center justify-center rounded-full border text-slate-300 transition ${
-          value === "entry"
-            ? "border-emerald-400/70 bg-emerald-400/10 text-emerald-200"
-            : "border-slate-700 bg-slate-900 hover:border-slate-500 hover:text-white"
-        }`}
+        className={`flex h-8 w-8 items-center justify-center rounded-full border text-slate-300 transition ${value === "entry"
+          ? "border-emerald-400/70 bg-emerald-400/10 text-emerald-200"
+          : "border-slate-700 bg-slate-900 hover:border-slate-500 hover:text-white"
+          }`}
         aria-label="Центрировать по входной локации"
       >
         <GlobeIcon className="h-4 w-4" />
@@ -603,26 +827,23 @@ function LayoutSwitcher({ value, onChange, playerModeDisabled }: LayoutSwitcherP
       <button
         type="button"
         onClick={toggle}
-        className={`relative h-6 w-12 rounded-full bg-slate-800 transition ${
-          playerModeDisabled && value === "entry" ? "opacity-50" : "hover:bg-slate-700"
-        }`}
+        className={`relative h-6 w-12 rounded-full bg-slate-800 transition ${playerModeDisabled && value === "entry" ? "opacity-50" : "hover:bg-slate-700"
+          }`}
         aria-label="Переключить режим раскладки"
         disabled={playerModeDisabled && value === "entry"}
       >
         <span
-          className={`absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-emerald-400 transition-all ${
-            value === "entry" ? "left-1" : "left-7"
-          }`}
+          className={`absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-emerald-400 transition-all ${value === "entry" ? "left-1" : "left-7"
+            }`}
         />
       </button>
       <button
         type="button"
         onClick={() => onChange("player")}
-        className={`flex h-8 w-8 items-center justify-center rounded-full border text-slate-300 transition ${
-          value === "player"
-            ? "border-emerald-400/70 bg-emerald-400/10 text-emerald-200"
-            : "border-slate-700 bg-slate-900 hover:border-slate-500 hover:text-white"
-        } ${playerModeDisabled ? "opacity-40" : ""}`}
+        className={`flex h-8 w-8 items-center justify-center rounded-full border text-slate-300 transition ${value === "player"
+          ? "border-emerald-400/70 bg-emerald-400/10 text-emerald-200"
+          : "border-slate-700 bg-slate-900 hover:border-slate-500 hover:text-white"
+          } ${playerModeDisabled ? "opacity-40" : ""}`}
         aria-label="Центрировать по позиции персонажа"
         disabled={playerModeDisabled}
       >

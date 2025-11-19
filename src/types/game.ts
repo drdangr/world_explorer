@@ -95,6 +95,7 @@ export interface UpdateWorldPayload {
   setting?: string;
   atmosphere?: string;
   genre?: string;
+  graph?: Record<LocationId, LocationNode>;
 }
 
 export interface CreateCharacterPayload {
