@@ -84,7 +84,8 @@ export function GraphPanel() {
     [characters, currentCharacterId],
   );
 
-  const playerLocationId = currentCharacter?.currentLocationId ?? null;
+  const playerLocationId =
+    currentCharacter?.currentLocationId ?? currentWorld?.entryLocationId ?? null;
   const canUsePlayerCenter = Boolean(
     currentWorld && playerLocationId && currentWorld.graph[playerLocationId],
   );

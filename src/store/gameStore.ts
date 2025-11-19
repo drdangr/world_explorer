@@ -68,9 +68,10 @@ export const useGameStore = create<GameState>((set, get) => ({
       set({ isInitializing: true, error: null });
 
       try {
-        const [worldsResponse, charactersResponse] = await Promise.all([
+        const [worldsResponse, charactersResponse, stateResponse] = await Promise.all([
           fetch("/api/worlds", { cache: "no-store" }),
           fetch("/api/characters", { cache: "no-store" }),
+          fetch("/api/app-state", { cache: "no-store" }),
         ]);
 
         if (!worldsResponse.ok || !charactersResponse.ok) {
@@ -82,9 +83,24 @@ export const useGameStore = create<GameState>((set, get) => ({
           charactersResponse.json(),
         ])) as [World[], Character[]];
 
-        const currentWorldId = get().currentWorldId ?? worlds.at(0)?.id ?? null;
-        const currentCharacterId =
-          get().currentCharacterId ?? characters.at(0)?.id ?? null;
+        let savedState = { currentWorldId: null, currentCharacterId: null };
+        if (stateResponse.ok) {
+          savedState = await stateResponse.json();
+        }
+
+        // Use persisted ID if available and valid, otherwise fallback
+        let currentWorldId = savedState.currentWorldId;
+        if (!currentWorldId || !worlds.find((w) => w.id === currentWorldId)) {
+          currentWorldId = worlds.at(0)?.id ?? null;
+        }
+
+        let currentCharacterId = savedState.currentCharacterId;
+        if (
+          !currentCharacterId ||
+          !characters.find((c) => c.id === currentCharacterId)
+        ) {
+          currentCharacterId = characters.at(0)?.id ?? null;
+        }
 
         set({
           worlds,
@@ -152,14 +168,28 @@ export const useGameStore = create<GameState>((set, get) => ({
         messages: [],
         suggestions: [],
         error: null,
-        forceNewSession: sessionId === "new", // Mark that we need a new session on next turn
+        forceNewSession: sessionId === "new",
       });
+
+      // Persist selection
+      fetch("/api/app-state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentWorldId: worldId }),
+      }).catch(console.error);
 
       void get().actions.loadSessionLog(worldId, get().currentCharacterId, sessionId);
     },
 
     selectCharacter: (characterId) => {
       set({ currentCharacterId: characterId, messages: [], suggestions: [], error: null });
+
+      // Persist selection
+      fetch("/api/app-state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentCharacterId: characterId }),
+      }).catch(console.error);
 
       void get().actions.loadSessionLog(get().currentWorldId, characterId);
     },
@@ -202,6 +232,13 @@ export const useGameStore = create<GameState>((set, get) => ({
             isMutating: false,
           };
         });
+
+        // Persist selection
+        fetch("/api/app-state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentWorldId: world.id }),
+        }).catch(console.error);
 
         await get().actions.loadSessionLog(world.id, get().currentCharacterId);
 
@@ -272,6 +309,15 @@ export const useGameStore = create<GameState>((set, get) => ({
           const currentWorldId =
             state.currentWorldId === worldId ? worlds.at(0)?.id ?? null : state.currentWorldId;
 
+          // Update persisted state if current world changed
+          if (state.currentWorldId === worldId) {
+            fetch("/api/app-state", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ currentWorldId: currentWorldId }),
+            }).catch(console.error);
+          }
+
           return {
             worlds,
             currentWorldId,
@@ -320,6 +366,13 @@ export const useGameStore = create<GameState>((set, get) => ({
             isMutating: false,
           };
         });
+
+        // Persist selection
+        fetch("/api/app-state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentCharacterId: character.id }),
+        }).catch(console.error);
 
         await get().actions.loadSessionLog(get().currentWorldId, character.id);
 
@@ -395,6 +448,15 @@ export const useGameStore = create<GameState>((set, get) => ({
             state.currentCharacterId === characterId
               ? characters.at(0)?.id ?? null
               : state.currentCharacterId;
+
+          // Update persisted state if current character changed
+          if (state.currentCharacterId === characterId) {
+            fetch("/api/app-state", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ currentCharacterId: currentCharacterId }),
+            }).catch(console.error);
+          }
 
           return {
             characters,
@@ -501,4 +563,3 @@ function upsertCharacter(characters: Character[], updated: Character): Character
     ? characters.map((character) => (character.id === updated.id ? updated : character))
     : [...characters, updated];
 }
-
