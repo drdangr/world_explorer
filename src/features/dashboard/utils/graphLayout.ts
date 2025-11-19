@@ -40,6 +40,7 @@ export interface GraphLayoutOptions {
   radialStrength: number;
   centerStrength: number;
   animationDuration?: number;
+  distanceMax?: number;
   alphaDecay?: number;
   velocityDecay?: number;
 }
@@ -59,19 +60,20 @@ export class GraphLayoutEngine {
       centerNodeId: options.centerNodeId,
       nodeRadius: options.nodeRadius || 80,
       linkDistance: options.linkDistance || 200,
-      chargeStrength: options.chargeStrength || -1200,
+      chargeStrength: options.chargeStrength || -1000,
       radialStrength: options.radialStrength || 0.5,
       centerStrength: options.centerStrength || 0.1,
       animationDuration: options.animationDuration || 300,
-      alphaDecay: options.alphaDecay || 0.05, // Faster decay (default is ~0.0228)
-      velocityDecay: options.velocityDecay || 0.4, // Default is 0.4
+      distanceMax: options.distanceMax || 1000, // Default limit for repulsion
+      alphaDecay: options.alphaDecay || 0.05,
+      velocityDecay: options.velocityDecay || 0.4,
     };
 
     this.initSimulation();
   }
 
   private initSimulation() {
-    const { width, height, linkDistance, chargeStrength, centerStrength, alphaDecay, velocityDecay } = this.options;
+    const { width, height, linkDistance, chargeStrength, centerStrength, alphaDecay, velocityDecay, distanceMax } = this.options;
 
     this.simulation = forceSimulation<GraphNode>()
       .alphaDecay(alphaDecay)
@@ -83,7 +85,12 @@ export class GraphLayoutEngine {
           .distance(() => this.options.linkDistance)
           .strength(1)
       )
-      .force("charge", forceManyBody().strength(chargeStrength))
+      .force(
+        "charge",
+        forceManyBody()
+          .strength(chargeStrength)
+          .distanceMax(distanceMax) // Limit repulsion range
+      )
       .force("center", forceCenter(width / 2, height / 2).strength(centerStrength))
       .force("collide", forceCollide(this.options.nodeRadius + 10))
       .on("tick", () => {
@@ -159,6 +166,34 @@ export class GraphLayoutEngine {
     this.nodes = nodes;
     this.links = links;
 
+    // Smart Initialization: Position new nodes in a spiral if they don't have positions
+    const centerX = this.options.width / 2;
+    const centerY = this.options.height / 2;
+    const spiralStep = this.options.nodeRadius * 2.5;
+
+    this.nodes.forEach((node, index) => {
+      // If node has a saved position (from initialPositions), use it
+      const savedPos = initialPositions?.get(node.id);
+      if (savedPos) {
+        node.x = savedPos.x;
+        node.y = savedPos.y;
+        return;
+      }
+
+      // If node already has coordinates (e.g. from previous tick), keep them
+      if (node.x !== undefined && node.y !== undefined && node.x !== 0 && node.y !== 0) {
+        return;
+      }
+
+      // Otherwise, place in a spiral pattern
+      // Skip index 0 (center) if we want it exactly at center, but spiral handles it fine
+      const angle = index * 0.5; // Radians
+      const radius = spiralStep * Math.sqrt(index);
+
+      node.x = centerX + radius * Math.cos(angle);
+      node.y = centerY + radius * Math.sin(angle);
+    });
+
     // Обновляем центр и другие силы в соответствии с новыми опциями
     const centerForce = this.simulation.force("center");
     if (centerForce && typeof (centerForce as any).x === "function") {
@@ -170,6 +205,15 @@ export class GraphLayoutEngine {
     }
 
     this.simulation.force("collide", forceCollide(this.options.nodeRadius + 10));
+
+    // Update charge force with new distanceMax if changed
+    const chargeForce = this.simulation.force("charge");
+    if (chargeForce) {
+      chargeForce.strength(this.options.chargeStrength);
+      if (this.options.distanceMax) {
+        chargeForce.distanceMax(this.options.distanceMax);
+      }
+    }
 
     // Расчет глубины узлов, если указан центральный узел
     if (this.options.centerNodeId) {

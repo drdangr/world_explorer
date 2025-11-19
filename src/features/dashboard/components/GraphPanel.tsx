@@ -23,7 +23,8 @@ import { LocationSettingsModal } from "./LocationSettingsModal";
 
 const NODE_RADIUS = 80;
 const FORCE_LINK_DISTANCE = 400;
-const FORCE_NODE_CHARGE = -2500;
+const FORCE_NODE_CHARGE = -1000;
+const FORCE_DISTANCE_MAX = 1200;
 
 const NODE_TYPES = {
   circle: CircleNode,
@@ -246,6 +247,7 @@ export function GraphPanel() {
       chargeStrength: FORCE_NODE_CHARGE,
       radialStrength: layoutMode === "player" ? 0.65 : 0.55,
       centerStrength: 0.15,
+      distanceMax: FORCE_DISTANCE_MAX,
       alphaDecay: 0.08, // Faster settling (default ~0.0228)
       velocityDecay: 0.45, // Slightly more friction (default 0.4)
     };
