@@ -18,12 +18,19 @@
           "description": "Маленький волшебный мячик для квиддича, возможно, имеющий ценность.",
           "portable": true,
           "ownerCharacterId": "9fdd7aba-8051-4e59-bba9-96544966d709"
+        },
+        {
+          "id": "b3b9e16d-0cbb-48a3-bcdd-77be5a0cf96a",
+          "name": "Датапад Ночной Стражи",
+          "description": "Поврежденный датапад с логотипом Ночной Стражи, найденный в кармане. Возможно, содержит полезную информацию.",
+          "portable": true,
+          "ownerCharacterId": "9fdd7aba-8051-4e59-bba9-96544966d709"
         }
       ],
-      "currentWorldId": "57139391-7778-4d99-87c5-28b0da45d1a0",
-      "currentLocationId": "3036da4e-edc5-4ada-a2e5-7fe8dc89fcaa",
-      "lastSessionFile": "session__9fdd7aba-8051-4e59-bba9-96544966d709__57139391-7778-4d99-87c5-28b0da45d1a0__20251119T040110031.json",
-      "lastSessionEntryId": "c509b955-294b-4701-85f8-149cc491031f"
+      "currentWorldId": "42d2fb0c-9c3a-4da3-9b95-8d9f1e695f9e",
+      "currentLocationId": "79e9a67b-64d4-4da1-86ff-36c3feeccd58",
+      "lastSessionFile": "session__9fdd7aba-8051-4e59-bba9-96544966d709__42d2fb0c-9c3a-4da3-9b95-8d9f1e695f9e__20251119T035355202.json",
+      "lastSessionEntryId": "f94ef6ce-2a7d-4254-add9-2863145a12c8"
     }
   ]
 }

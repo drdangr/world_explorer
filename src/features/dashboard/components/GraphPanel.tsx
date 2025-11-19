@@ -250,13 +250,16 @@ export function GraphPanel() {
       velocityDecay: 0.45, // Slightly more friction (default 0.4)
     };
 
-    // Если мир изменился, сбрасываем движок
+    // Если мир изменился, сбрасываем движок и очищаем состояние
     if (
       latestGraphDataRef.current &&
       latestGraphDataRef.current.worldId !== currentWorld.id
     ) {
       engineRef.current?.stop();
       engineRef.current = null;
+      // Очищаем ноды и связи немедленно, чтобы убрать тяжелые DOM элементы
+      setFlowNodes([]);
+      setFlowEdges([]);
     }
 
     let engine = engineRef.current;
@@ -288,6 +291,11 @@ export function GraphPanel() {
     const savedState = getSavedState();
     engine.updateGraph(layoutNodes, links, options, savedState?.positions);
     savePositions();
+
+    // Cleanup function to stop simulation when component unmounts or dependencies change
+    return () => {
+      engineRef.current?.stop();
+    };
   }, [
     currentWorld,
     layoutMode,
@@ -694,7 +702,8 @@ export function GraphPanel() {
             proOptions={{ hideAttribution: true }}
             nodesDraggable={true}
             nodesConnectable={false}
-            panOnScroll={true}
+            panOnScroll={false}
+            zoomOnScroll={true}
             selectionOnDrag={false}
             panOnDrag={[2]}
             panActivationKeyCode="Space"
