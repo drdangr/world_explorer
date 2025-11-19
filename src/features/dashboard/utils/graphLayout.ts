@@ -92,7 +92,7 @@ export class GraphLayoutEngine {
           .distanceMax(distanceMax) // Limit repulsion range
       )
       .force("center", forceCenter(width / 2, height / 2).strength(centerStrength))
-      .force("collide", forceCollide(this.options.nodeRadius + 10))
+      .force("collide", forceCollide(this.options.nodeRadius * 2))
       .on("tick", () => {
         if (this.onUpdate) {
           this.onUpdate(this.nodes);
@@ -204,7 +204,7 @@ export class GraphLayoutEngine {
       }
     }
 
-    this.simulation.force("collide", forceCollide(this.options.nodeRadius + 10));
+    this.simulation.force("collide", forceCollide(this.options.nodeRadius * 2));
 
     // Update charge force with new distanceMax if changed
     const chargeForce = this.simulation.force("charge");
