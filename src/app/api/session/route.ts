@@ -22,12 +22,13 @@ const SessionRequestSchema = z.object({
   characterId: z.string().min(1),
   message: z.string().default(""),
   isInitial: z.boolean().default(false),
+  forceNew: z.boolean().default(false),
 });
 
 export async function POST(request: Request) {
   try {
     const json = await request.json();
-    const { worldId, characterId, message, isInitial } = SessionRequestSchema.parse(json);
+    const { worldId, characterId, message, isInitial, forceNew } = SessionRequestSchema.parse(json);
 
     const world = await getWorldOrThrow(worldId);
     const character = await getCharacterOrThrow(characterId);
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
 
     const provider = getLLMProvider();
 
-    const { sessionFile, sessionLog } = await resolveSessionLog(character, worldId);
+    const { sessionFile, sessionLog } = await resolveSessionLog(character, worldId, forceNew);
     const history = sessionLog.entries.slice(-12);
     const lastActionReminder = findLastActionReminder(sessionLog.entries, currentLocation.id);
 
@@ -112,7 +113,7 @@ export async function POST(request: Request) {
   }
 }
 
-class NotFoundError extends Error {}
+class NotFoundError extends Error { }
 
 async function getWorldOrThrow(worldId: string) {
   const world = await getWorldById(worldId);
@@ -152,35 +153,35 @@ function resolveCurrentLocation(world: Awaited<ReturnType<typeof getWorldOrThrow
   throw new NotFoundError("В мире отсутствуют локации");
 }
 
-async function resolveSessionLog(character: Awaited<ReturnType<typeof getCharacterOrThrow>>, worldId: string) {
-  const now = new Date().toISOString();
+async function resolveSessionLog(
+  character: Awaited<ReturnType<typeof getCharacterOrThrow>>,
+  worldId: string,
+  forceNew: boolean = false,
+) {
+  // If forceNew is true, always create a new session
+  if (forceNew) {
+    const startedAt = new Date().toISOString();
+    const { fileName, log } = await createSessionLog(character.id, worldId, startedAt, []);
+    return { sessionFile: fileName, sessionLog: log };
+  }
 
-  if (character.lastSessionFile) {
-    const existing = await readSessionLog(character.lastSessionFile);
-    if (existing && existing.worldId === worldId && existing.characterId === character.id) {
-      return {
-        sessionFile: character.lastSessionFile,
-        sessionLog: existing,
-      };
+  // Try to find existing session
+  const candidateFiles = [
+    character.lastSessionFile,
+    await findLatestSessionFile(character.id, worldId),
+  ].filter((file): file is string => Boolean(file));
+
+  for (const file of candidateFiles) {
+    const log = await readSessionLog(file);
+    if (log && log.worldId === worldId && log.characterId === character.id) {
+      return { sessionFile: file, sessionLog: log };
     }
   }
 
-  const latestFile = await findLatestSessionFile(character.id, worldId);
-  if (latestFile) {
-    const existing = await readSessionLog(latestFile);
-    if (existing) {
-      return {
-        sessionFile: latestFile,
-        sessionLog: existing,
-      };
-    }
-  }
-
-  const { fileName, log } = await createSessionLog(character.id, worldId, now, []);
-  return {
-    sessionFile: fileName,
-    sessionLog: log,
-  };
+  // No existing session found, create new one
+  const startedAt = new Date().toISOString();
+  const { fileName, log } = await createSessionLog(character.id, worldId, startedAt, []);
+  return { sessionFile: fileName, sessionLog: log };
 }
 
 function findLastActionReminder(entries: SessionEntry[], locationId: LocationId) {

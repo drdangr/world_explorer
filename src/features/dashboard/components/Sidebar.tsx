@@ -19,6 +19,7 @@ import { useGameStore } from "@/store/gameStore";
 import type { World } from "@/types/game";
 
 import { CharacterSettingsModal } from "./CharacterSettingsModal";
+import { SessionSelectionModal, type SessionMeta } from "./SessionSelectionModal";
 import { WorldSettingsModal } from "./WorldSettingsModal";
 
 interface WorldModalState {
@@ -39,6 +40,7 @@ export function Sidebar() {
   const [worldModal, setWorldModal] = useState<WorldModalState | null>(null);
   const [isCharacterModalOpen, setCharacterModalOpen] = useState(false);
   const [inventoryExpanded, setInventoryExpanded] = useState(true);
+  const [sessionModal, setSessionModal] = useState<{ worldId: string; sessions: SessionMeta[] } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -119,6 +121,51 @@ export function Sidebar() {
     await actions.deleteWorld(world.id);
   };
 
+  const handleSelectWorld = async (worldId: string) => {
+    if (!currentCharacterId) {
+      // No character selected, just switch worlds
+      actions.selectWorld(worldId);
+      return;
+    }
+
+    try {
+      const params = new URLSearchParams({ characterId: currentCharacterId, worldId });
+      const response = await fetch(`/api/sessions?${params.toString()}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch sessions");
+      }
+
+      const sessions = (await response.json()) as SessionMeta[];
+
+      if (sessions.length === 0) {
+        // No sessions, just switch
+        actions.selectWorld(worldId);
+      } else {
+        // Show session selection modal
+        setSessionModal({ worldId, sessions });
+      }
+    } catch (error) {
+      console.error("Error fetching sessions:", error);
+      // Fallback to default behavior
+      actions.selectWorld(worldId);
+    }
+  };
+
+  const handleSessionSelect = (sessionId: string) => {
+    if (sessionModal) {
+      actions.selectWorld(sessionModal.worldId, sessionId);
+      setSessionModal(null);
+    }
+  };
+
+  const handleNewSession = () => {
+    if (sessionModal) {
+      actions.selectWorld(sessionModal.worldId, "new"); // "new" = explicitly start fresh
+      setSessionModal(null);
+    }
+  };
+
   return (
     <aside className="flex h-full min-w-[16rem] max-w-md flex-col border-r border-slate-800 bg-slate-950/60 text-slate-100">
       <header className="flex items-center justify-between border-b border-slate-800 px-4 py-4">
@@ -178,7 +225,7 @@ export function Sidebar() {
                       key={world.id}
                       world={world}
                       isSelected={world.id === currentWorldId}
-                      onSelect={() => actions.selectWorld(world.id)}
+                      onSelect={() => handleSelectWorld(world.id)}
                       onOpenSettings={() => openEditWorldModal(world)}
                       onDelete={() => handleDeleteWorld(world)}
                     />
@@ -239,6 +286,13 @@ export function Sidebar() {
         onClose={closeWorldModal}
       />
       <CharacterSettingsModal open={isCharacterModalOpen} onClose={() => setCharacterModalOpen(false)} />
+      <SessionSelectionModal
+        open={sessionModal !== null}
+        sessions={sessionModal?.sessions ?? []}
+        onSelect={handleSessionSelect}
+        onNewSession={handleNewSession}
+        onClose={() => setSessionModal(null)}
+      />
     </aside>
   );
 }
@@ -266,11 +320,10 @@ function SortableWorldListItem({ world, isSelected, onSelect, onOpenSettings, on
     <li
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-2 rounded-lg border px-2 py-2 text-sm transition ${
-        isSelected
-          ? "border-emerald-400/60 bg-emerald-400/10"
-          : "border-transparent hover:border-slate-700 hover:bg-slate-900/60"
-      }`}
+      className={`group flex items-center gap-2 rounded-lg border px-2 py-2 text-sm transition ${isSelected
+        ? "border-emerald-400/60 bg-emerald-400/10"
+        : "border-transparent hover:border-slate-700 hover:bg-slate-900/60"
+        }`}
     >
       <button
         type="button"
@@ -284,9 +337,8 @@ function SortableWorldListItem({ world, isSelected, onSelect, onOpenSettings, on
       <button
         type="button"
         onClick={onSelect}
-        className={`flex-1 truncate text-left text-sm font-medium transition ${
-          isSelected ? "text-emerald-100" : "text-slate-200 group-hover:text-white"
-        }`}
+        className={`flex-1 truncate text-left text-sm font-medium transition ${isSelected ? "text-emerald-100" : "text-slate-200 group-hover:text-white"
+          }`}
       >
         {world.name}
       </button>

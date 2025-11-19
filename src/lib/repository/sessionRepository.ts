@@ -11,7 +11,7 @@ function buildSessionFileName(
   worldId: WorldId,
   startedAt: string,
 ): string {
-  const normalizedTimestamp = startedAt.replace(/[:.]/g, "").replace(/Z$/, "");
+  const normalizedTimestamp = startedAt.replace(/[-:.]/g, "").replace(/Z$/, "");
   return `session__${characterId}__${worldId}__${normalizedTimestamp}.json`;
 }
 
@@ -99,7 +99,22 @@ function parseSessionFileName(fileName: string): SessionFileMeta | null {
 
   const [, characterId, worldId, timestamp] = match;
 
-  const startedAt = timestamp.length >= 15 ? `${timestamp.slice(0, 8)}T${timestamp.slice(8)}Z` : timestamp;
+  // Normalize timestamp - remove any remaining separators
+  const normalized = timestamp.replace(/[-:.]/g, "");
+
+  // Reconstruct ISO 8601 from compressed format: 20251119T103000000 -> 2025-01-19T10:30:00.000Z
+  let startedAt = timestamp;
+  if (normalized.length >= 15) {
+    const year = normalized.slice(0, 4);
+    const month = normalized.slice(4, 6);
+    const day = normalized.slice(6, 8);
+    const hour = normalized.slice(9, 11);
+    const minute = normalized.slice(11, 13);
+    const second = normalized.slice(13, 15);
+    const ms = normalized.slice(15, 18) || "000";
+
+    startedAt = `${year}-${month}-${day}T${hour}:${minute}:${second}.${ms}Z`;
+  }
 
   return {
     fileName,

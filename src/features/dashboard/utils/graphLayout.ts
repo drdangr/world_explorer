@@ -16,6 +16,12 @@ export interface GraphNode extends SimulationNodeDatum {
   isEntry?: boolean;
   isPlayerHere?: boolean;
   depth?: number; // расстояние от центральной ноды
+  x?: number;
+  y?: number;
+  vx?: number;
+  vy?: number;
+  fx?: number | null;
+  fy?: number | null;
 }
 
 export interface GraphLink extends SimulationLinkDatum<GraphNode> {
@@ -34,6 +40,8 @@ export interface GraphLayoutOptions {
   radialStrength: number;
   centerStrength: number;
   animationDuration?: number;
+  alphaDecay?: number;
+  velocityDecay?: number;
 }
 
 export class GraphLayoutEngine {
@@ -55,15 +63,19 @@ export class GraphLayoutEngine {
       radialStrength: options.radialStrength || 0.5,
       centerStrength: options.centerStrength || 0.1,
       animationDuration: options.animationDuration || 300,
+      alphaDecay: options.alphaDecay || 0.05, // Faster decay (default is ~0.0228)
+      velocityDecay: options.velocityDecay || 0.4, // Default is 0.4
     };
 
     this.initSimulation();
   }
 
   private initSimulation() {
-    const { width, height, linkDistance, chargeStrength, centerStrength } = this.options;
+    const { width, height, linkDistance, chargeStrength, centerStrength, alphaDecay, velocityDecay } = this.options;
 
     this.simulation = forceSimulation<GraphNode>()
+      .alphaDecay(alphaDecay)
+      .velocityDecay(velocityDecay)
       .force(
         "link",
         forceLink<GraphNode, GraphLink>()
@@ -99,11 +111,11 @@ export class GraphLayoutEngine {
 
     while (queue.length > 0) {
       const { id, depth } = queue.shift()!;
-      
+
       // Находим все связи для текущего узла
       this.links.forEach((link) => {
         let neighborId: string | null = null;
-        
+
         const sourceId = typeof link.source === "object" ? link.source.id : link.source;
         const targetId = typeof link.target === "object" ? link.target.id : link.target;
 
@@ -170,7 +182,7 @@ export class GraphLayoutEngine {
       const { width, height, linkDistance, radialStrength } = this.options;
       const centerX = width / 2;
       const centerY = height / 2;
-      
+
       this.simulation
         .force(
           "radial",
@@ -287,23 +299,23 @@ export class GraphLayoutEngine {
   public centerGraph() {
     const { width, height } = this.options;
     const bounds = this.getGraphBounds();
-    
+
     if (bounds) {
       const graphWidth = bounds.maxX - bounds.minX;
       const graphHeight = bounds.maxY - bounds.minY;
       const graphCenterX = (bounds.maxX + bounds.minX) / 2;
       const graphCenterY = (bounds.maxY + bounds.minY) / 2;
-      
+
       const offsetX = width / 2 - graphCenterX;
       const offsetY = height / 2 - graphCenterY;
-      
+
       this.nodes.forEach((node) => {
         if (node.x !== undefined && node.y !== undefined) {
           node.x += offsetX;
           node.y += offsetY;
         }
       });
-      
+
       this.simulation.alpha(0).restart();
     }
   }
@@ -313,10 +325,10 @@ export class GraphLayoutEngine {
    */
   private getGraphBounds() {
     if (this.nodes.length === 0) return null;
-    
+
     let minX = Infinity, maxX = -Infinity;
     let minY = Infinity, maxY = -Infinity;
-    
+
     this.nodes.forEach((node) => {
       if (node.x !== undefined && node.y !== undefined) {
         minX = Math.min(minX, node.x);
@@ -325,7 +337,7 @@ export class GraphLayoutEngine {
         maxY = Math.max(maxY, node.y);
       }
     });
-    
+
     return { minX, maxX, minY, maxY };
   }
 }

@@ -49,6 +49,7 @@ export function GraphPanel() {
     nodes: LayoutNode[];
     links: GraphLink[];
     options: GraphLayoutOptions;
+    worldId: string;
   } | null>(null);
   type SavedGraphState = {
     positions: Map<string, { x: number; y: number }>;
@@ -245,7 +246,18 @@ export function GraphPanel() {
       chargeStrength: FORCE_NODE_CHARGE,
       radialStrength: layoutMode === "player" ? 0.65 : 0.55,
       centerStrength: 0.15,
+      alphaDecay: 0.08, // Faster settling (default ~0.0228)
+      velocityDecay: 0.45, // Slightly more friction (default 0.4)
     };
+
+    // Если мир изменился, сбрасываем движок
+    if (
+      latestGraphDataRef.current &&
+      latestGraphDataRef.current.worldId !== currentWorld.id
+    ) {
+      engineRef.current?.stop();
+      engineRef.current = null;
+    }
 
     let engine = engineRef.current;
     if (!engine) {
@@ -272,7 +284,7 @@ export function GraphPanel() {
       }
     });
 
-    latestGraphDataRef.current = { nodes: layoutNodes, links, options };
+    latestGraphDataRef.current = { nodes: layoutNodes, links, options, worldId: currentWorld.id };
     const savedState = getSavedState();
     engine.updateGraph(layoutNodes, links, options, savedState?.positions);
     savePositions();

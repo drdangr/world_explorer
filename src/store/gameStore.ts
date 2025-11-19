@@ -25,13 +25,14 @@ interface GameState {
   isProcessingTurn: boolean;
   isMutating: boolean;
   error: string | null;
+  forceNewSession: boolean;
   actions: GameActions;
 }
 
 interface GameActions {
   loadInitialData: () => Promise<void>;
-  loadSessionLog: (worldId: WorldId | null, characterId: CharacterId | null) => Promise<void>;
-  selectWorld: (worldId: WorldId | null) => void;
+  loadSessionLog: (worldId: WorldId | null, characterId: CharacterId | null, sessionId?: string) => Promise<void>;
+  selectWorld: (worldId: WorldId | null, sessionId?: string) => void;
   selectCharacter: (characterId: CharacterId | null) => void;
   requestInitialTurn: () => Promise<void>;
   sendPlayerMessage: (message: string) => Promise<void>;
@@ -57,6 +58,7 @@ const initialState: Omit<GameState, "actions"> = {
   isProcessingTurn: false,
   isMutating: false,
   error: null,
+  forceNewSession: false,
 };
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -106,14 +108,24 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
     },
 
-    loadSessionLog: async (worldId, characterId) => {
+    loadSessionLog: async (worldId, characterId, sessionId) => {
       if (!worldId || !characterId) {
         set({ messages: [], suggestions: [] });
         return;
       }
 
+      // If explicitly "new" session, clear messages without loading
+      if (sessionId === "new") {
+        set({ messages: [], suggestions: [], error: null });
+        return;
+      }
+
       try {
         const params = new URLSearchParams({ characterId, worldId });
+        if (sessionId) {
+          params.append("sessionId", sessionId);
+        }
+
         const response = await fetch(`/api/session/log?${params.toString()}`, {
           cache: "no-store",
         });
@@ -134,10 +146,16 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
     },
 
-    selectWorld: (worldId) => {
-      set({ currentWorldId: worldId, messages: [], suggestions: [], error: null });
+    selectWorld: (worldId, sessionId) => {
+      set({
+        currentWorldId: worldId,
+        messages: [],
+        suggestions: [],
+        error: null,
+        forceNewSession: sessionId === "new", // Mark that we need a new session on next turn
+      });
 
-      void get().actions.loadSessionLog(worldId, get().currentCharacterId);
+      void get().actions.loadSessionLog(worldId, get().currentCharacterId, sessionId);
     },
 
     selectCharacter: (characterId) => {
@@ -414,7 +432,7 @@ async function processSessionTurn(
   get: () => GameState,
 ) {
   const state = get();
-  const { currentWorldId, currentCharacterId } = state;
+  const { currentWorldId, currentCharacterId, forceNewSession } = state;
 
   if (!currentWorldId || !currentCharacterId) {
     set({ error: "Выберите мир и персонажа, чтобы продолжить" });
@@ -432,6 +450,7 @@ async function processSessionTurn(
         characterId: currentCharacterId,
         message,
         isInitial,
+        forceNew: forceNewSession, // Pass the flag to create a new session
       }),
     });
 
@@ -459,6 +478,7 @@ async function processSessionTurn(
         messages: data.session.entries,
         suggestions: data.suggestions ?? [],
         isProcessingTurn: false,
+        forceNewSession: false, // Reset the flag after successful turn
       };
     });
   } catch (error) {
