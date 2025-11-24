@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import path from "node:path";
 
 import {
   type CharacterId,
@@ -6,10 +7,15 @@ import {
   type UpdateWorldPayload,
   type World,
   type WorldId,
-  type WorldsFile,
 } from "@/types/game";
-import { readJsonFile, updateJsonFile } from "@/lib/storage/jsonStorage";
+import {
+  deleteJsonFile,
+  listJsonFiles,
+  readJsonFile,
+  writeJsonFile,
+} from "@/lib/storage/jsonStorage";
 import { isSupabaseEnabled } from "@/lib/supabase/client";
+import { sanitizeFilename } from "@/lib/utils/filename";
 import {
   sbAttachCharacterToWorld,
   sbCreateWorld,
@@ -21,16 +27,26 @@ import {
   sbUpdateWorld,
 } from "@/lib/repository/supabase/worldRepository";
 
-const WORLDS_FILE = "worlds.json";
-const WORLD_FALLBACK: WorldsFile = { worlds: [] };
+const WORLDS_DIR = "worlds";
+
+function getWorldFileName(world: World): string {
+  const safeName = sanitizeFilename(world.name);
+  return path.join(WORLDS_DIR, `${safeName}_${world.id}.json`);
+}
+
+async function findWorldFileById(worldId: WorldId): Promise<string | null> {
+  const worlds = await listJsonFiles<World>(WORLDS_DIR);
+  const world = worlds.find((w) => w.id === worldId);
+  if (!world) return null;
+  return getWorldFileName(world);
+}
 
 export async function getWorlds(): Promise<World[]> {
   if (isSupabaseEnabled()) {
     return sbGetWorlds();
   }
 
-  const data = await readJsonFile(WORLDS_FILE, WORLD_FALLBACK);
-  return data.worlds;
+  return listJsonFiles<World>(WORLDS_DIR);
 }
 
 export async function getWorldById(worldId: WorldId): Promise<World | undefined> {
@@ -73,10 +89,8 @@ export async function createWorld(payload: CreateWorldPayload): Promise<World> {
     ownerCharacterIds: [],
   };
 
-  await updateJsonFile(WORLDS_FILE, WORLD_FALLBACK, (data) => {
-    data.worlds.push(world);
-    return data;
-  });
+  const fileName = getWorldFileName(world);
+  await writeJsonFile(fileName, world);
 
   return world;
 }
@@ -89,34 +103,37 @@ export async function updateWorld(
     return sbUpdateWorld(worldId, payload);
   }
 
-  let updatedWorld: World | undefined;
+  const currentWorld = await getWorldById(worldId);
+  if (!currentWorld) {
+    return undefined;
+  }
 
-  await updateJsonFile(WORLDS_FILE, WORLD_FALLBACK, (data) => {
-    data.worlds = data.worlds.map((world) => {
-      if (world.id !== worldId) {
-        return world;
-      }
+  const updatedWorld: World = {
+    ...currentWorld,
+    ...payload,
+    name: payload.name?.trim() ?? currentWorld.name,
+    setting: payload.setting?.trim() ?? currentWorld.setting,
+    atmosphere: payload.atmosphere?.trim() ?? currentWorld.atmosphere,
+    genre: payload.genre?.trim() ?? currentWorld.genre,
+    updatedAt: new Date().toISOString(),
+  };
 
-      updatedWorld = {
-        ...world,
-        ...payload,
-        name: payload.name?.trim() ?? world.name,
-        setting: payload.setting?.trim() ?? world.setting,
-        atmosphere: payload.atmosphere?.trim() ?? world.atmosphere,
-        genre: payload.genre?.trim() ?? world.genre,
-        updatedAt: new Date().toISOString(),
-      };
+  // Explicitly handle graph update if present in payload
+  if (payload.graph) {
+    updatedWorld.graph = payload.graph;
+  }
 
-      // Explicitly handle graph update if present in payload
-      if (payload.graph) {
-        updatedWorld.graph = payload.graph;
-      }
+  // If name changed, we might want to rename the file, but for simplicity
+  // we can keep the old filename or delete old and create new.
+  // Let's delete old and create new to keep filenames consistent with content.
+  const oldFileName = getWorldFileName(currentWorld);
+  const newFileName = getWorldFileName(updatedWorld);
 
-      return updatedWorld;
-    });
+  if (oldFileName !== newFileName) {
+    await deleteJsonFile(oldFileName);
+  }
 
-    return data;
-  });
+  await writeJsonFile(newFileName, updatedWorld);
 
   return updatedWorld;
 }
@@ -126,22 +143,21 @@ export async function saveWorld(world: World): Promise<World> {
     return sbSaveWorld(world);
   }
 
-  let updated = world;
+  // Check if file exists with potentially different name (if name changed externally)
+  // But here we just save what we have.
+  // Ideally we should find the file by ID first to handle renames properly if we didn't have the old object.
+  // But saveWorld usually implies we have the full object.
 
-  await updateJsonFile(WORLDS_FILE, WORLD_FALLBACK, (data) => {
-    const hasWorld = data.worlds.some((item) => item.id === world.id);
+  // Let's try to find if there is an existing file for this ID to clean it up if name changed
+  const existingFile = await findWorldFileById(world.id);
+  const newFileName = getWorldFileName(world);
 
-    if (hasWorld) {
-      data.worlds = data.worlds.map((item) => (item.id === world.id ? world : item));
-    } else {
-      data.worlds.push(world);
-    }
+  if (existingFile && existingFile !== newFileName) {
+    await deleteJsonFile(existingFile);
+  }
 
-    updated = world;
-    return data;
-  });
-
-  return updated;
+  await writeJsonFile(newFileName, world);
+  return world;
 }
 
 export async function deleteWorld(worldId: WorldId): Promise<boolean> {
@@ -149,16 +165,13 @@ export async function deleteWorld(worldId: WorldId): Promise<boolean> {
     return sbDeleteWorld(worldId);
   }
 
-  let removed = false;
+  const fileName = await findWorldFileById(worldId);
+  if (!fileName) {
+    return false;
+  }
 
-  await updateJsonFile(WORLDS_FILE, WORLD_FALLBACK, (data) => {
-    const initialLength = data.worlds.length;
-    data.worlds = data.worlds.filter((world) => world.id !== worldId);
-    removed = data.worlds.length < initialLength;
-    return data;
-  });
-
-  return removed;
+  await deleteJsonFile(fileName);
+  return true;
 }
 
 export async function detachCharacterFromWorld(
@@ -170,23 +183,16 @@ export async function detachCharacterFromWorld(
     return;
   }
 
-  await updateJsonFile(WORLDS_FILE, WORLD_FALLBACK, (data) => {
-    data.worlds = data.worlds.map((world) => {
-      if (world.id !== worldId) {
-        return world;
-      }
+  const world = await getWorldById(worldId);
+  if (!world) return;
 
-      return {
-        ...world,
-        ownerCharacterIds: world.ownerCharacterIds.filter(
-          (id) => id !== characterId,
-        ),
-        updatedAt: new Date().toISOString(),
-      };
-    });
+  const updatedWorld = {
+    ...world,
+    ownerCharacterIds: world.ownerCharacterIds.filter((id) => id !== characterId),
+    updatedAt: new Date().toISOString(),
+  };
 
-    return data;
-  });
+  await saveWorld(updatedWorld);
 }
 
 export async function attachCharacterToWorld(
@@ -198,24 +204,19 @@ export async function attachCharacterToWorld(
     return;
   }
 
-  await updateJsonFile(WORLDS_FILE, WORLD_FALLBACK, (data) => {
-    data.worlds = data.worlds.map((world) => {
-      if (world.id !== worldId) {
-        return world;
-      }
+  const world = await getWorldById(worldId);
+  if (!world) return;
 
-      if (world.ownerCharacterIds.includes(characterId)) {
-        return world;
-      }
+  if (world.ownerCharacterIds.includes(characterId)) {
+    return;
+  }
 
-      return {
-        ...world,
-        ownerCharacterIds: [...world.ownerCharacterIds, characterId],
-        updatedAt: new Date().toISOString(),
-      };
-    });
+  const updatedWorld = {
+    ...world,
+    ownerCharacterIds: [...world.ownerCharacterIds, characterId],
+    updatedAt: new Date().toISOString(),
+  };
 
-    return data;
-  });
+  await saveWorld(updatedWorld);
 }
 

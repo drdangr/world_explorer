@@ -64,3 +64,44 @@ function structuredCloneIfPossible<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
+export async function listJsonFiles<T>(subdir: string): Promise<T[]> {
+  const dirPath = path.join(DATA_DIR, subdir);
+  await ensureDataDirectory();
+
+  try {
+    await fs.access(dirPath);
+  } catch {
+    return [];
+  }
+
+  const files = await fs.readdir(dirPath);
+  const jsonFiles = files.filter((file) => file.endsWith(".json"));
+
+  const results: T[] = [];
+  for (const file of jsonFiles) {
+    try {
+      const content = await fs.readFile(path.join(dirPath, file), "utf8");
+      results.push(JSON.parse(content) as T);
+    } catch (error) {
+      console.warn(`Failed to parse ${file}:`, error);
+    }
+  }
+
+  return results;
+}
+
+export async function deleteJsonFile(fileName: string): Promise<void> {
+  const filePath = path.join(DATA_DIR, fileName);
+  try {
+    await fs.unlink(filePath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      throw error;
+    }
+  }
+}
+
+export async function ensureSubdirectory(subdir: string) {
+  const dirPath = path.join(DATA_DIR, subdir);
+  await fs.mkdir(dirPath, { recursive: true });
+}
