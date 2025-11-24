@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       locationContext: {
         currentLocation,
         knownLocations,
-        lastActionReminder,
+        lastActionReminder: lastActionReminder ?? undefined,
       },
       isInitial,
     });

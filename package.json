@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "description": "Интерактивная текстовая игра с LLM-гейм-мастером на Next.js",
-  "packageManager": "pnpm@10.20.0",
   "scripts": {
     "dev": "node node_modules/next/dist/bin/next dev",
     "build": "node node_modules/next/dist/bin/next build",
@@ -32,6 +31,7 @@
   "devDependencies": {
     "@babel/helper-validator-identifier": "^7.28.5",
     "@tailwindcss/postcss": "^4",
+    "@types/d3-force": "^3.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

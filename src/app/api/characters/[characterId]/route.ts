@@ -8,13 +8,14 @@ import {
 import type { UpdateCharacterPayload } from "@/types/game";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     characterId: string;
-  };
+  }>;
 }
 
 export async function GET(_: Request, { params }: RouteParams) {
-  const character = await getCharacterById(params.characterId);
+  const { characterId } = await params;
+  const character = await getCharacterById(characterId);
 
   if (!character) {
     return NextResponse.json({ error: "Персонаж не найден" }, { status: 404 });
@@ -25,8 +26,9 @@ export async function GET(_: Request, { params }: RouteParams) {
 
 export async function PATCH(request: Request, { params }: RouteParams) {
   try {
+    const { characterId } = await params;
     const payload = (await request.json()) as Partial<UpdateCharacterPayload>;
-    const character = await updateCharacter(params.characterId, payload);
+    const character = await updateCharacter(characterId, payload);
 
     if (!character) {
       return NextResponse.json({ error: "Персонаж не найден" }, { status: 404 });
@@ -43,7 +45,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 }
 
 export async function DELETE(_: Request, { params }: RouteParams) {
-  const deleted = await deleteCharacter(params.characterId);
+  const { characterId } = await params;
+  const deleted = await deleteCharacter(characterId);
 
   if (!deleted) {
     return NextResponse.json({ error: "Персонаж не найден" }, { status: 404 });

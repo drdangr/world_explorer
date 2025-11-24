@@ -72,6 +72,7 @@ export async function sbCreateWorld(payload: CreateWorldPayload): Promise<World>
         id: entryLocationId,
         locationName: "Центральная локация",
         description: null,
+        mapDescription: null,
         discovered: false,
         items: [],
         connections: [],

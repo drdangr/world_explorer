@@ -159,7 +159,7 @@ function getLabelStyle(
 function getNodeCenter(node: Node, radius: number) {
   // Используем positionAbsolute если доступно, иначе position
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const position = (node as any).positionAbsolute || node.position || { x: 0, y: 0 };
+  const position = (node as any).computed?.positionAbsolute ?? (node as any).positionAbsolute ?? node.position ?? { x: 0, y: 0 };
   // Для кастомных нод ширина/высота может быть в node.width/height или в style
   const nodeWidth = node.width || radius * 2;
   const nodeHeight = node.height || radius * 2;

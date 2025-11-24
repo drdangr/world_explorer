@@ -1,7 +1,7 @@
 "use client";
 
 import type { MouseEvent } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -446,14 +446,15 @@ export function GraphPanel() {
 
     const viewport = instance.getViewport?.();
     const zoom = viewport?.zoom ?? 1;
-    const pos = node.positionAbsolute ?? node.position;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pos = (node as any).computed?.positionAbsolute ?? (node as any).positionAbsolute ?? node.position;
     const width = node.width ?? NODE_RADIUS * 2;
     const height = node.height ?? NODE_RADIUS * 2;
 
     const centerX = (pos?.x ?? 0) + width / 2;
     const centerY = (pos?.y ?? 0) + height / 2;
 
-    instance.setCenter(centerX, centerY, { zoom, duration: 220, easing: (t) => t });
+    instance.setCenter(centerX, centerY, { zoom, duration: 220 });
     setTimeout(() => {
       const updated = instance.getViewport?.();
       if (updated) {
@@ -945,7 +946,7 @@ function LayoutIcon({ className }: IconProps) {
 
 interface ActionIconButtonProps {
   onClick: () => void;
-  icon: (props: IconProps) => JSX.Element;
+  icon: (props: IconProps) => React.ReactNode;
   ariaLabel: string;
 }
 

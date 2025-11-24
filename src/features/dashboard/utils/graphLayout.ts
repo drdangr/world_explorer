@@ -57,7 +57,7 @@ export class GraphLayoutEngine {
     this.options = {
       width: options.width || 800,
       height: options.height || 600,
-      centerNodeId: options.centerNodeId,
+      centerNodeId: options.centerNodeId ?? "",
       nodeRadius: options.nodeRadius || 80,
       linkDistance: options.linkDistance || 200,
       chargeStrength: options.chargeStrength || -1000,

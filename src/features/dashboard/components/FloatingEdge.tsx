@@ -99,7 +99,7 @@ function getLabelStyle(
 ) {
   const base: CSSProperties = {
     position: "absolute",
-    transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` ,
+    transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
     pointerEvents: "all",
     padding: `${labelBgPadding[1]}px ${labelBgPadding[0]}px`,
     borderRadius: labelBgBorderRadius,
@@ -142,7 +142,8 @@ function getEdgeParams(source: Node, target: Node) {
 function getNodeRect(node: Node) {
   const width = node.width ?? node.measured?.width ?? DEFAULT_NODE_WIDTH;
   const height = node.height ?? node.measured?.height ?? DEFAULT_NODE_HEIGHT;
-  const position = node.positionAbsolute ?? node.position ?? { x: 0, y: 0 };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const position = (node as any).computed?.positionAbsolute ?? (node as any).positionAbsolute ?? node.position ?? { x: 0, y: 0 };
 
   return {
     x: position.x,
