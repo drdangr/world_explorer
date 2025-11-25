@@ -1,14 +1,21 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
 import { jsonrepair } from "jsonrepair";
 
 import { DEFAULT_EXIT_LABEL } from "@/lib/gameplay/constants";
+import {
+  getNearLocations,
+  findLocationByName,
+  getRoute,
+  formatRoute,
+} from "../navigationTools";
 
 import type { GenerateTurnInput, LLMProvider } from "../provider";
 import { LLMGameTurnSchema, type LLMGameTurn } from "../types";
 
 const DEFAULT_MODEL = "gemini-1.5-pro-latest";
 const HISTORY_LIMIT = 8;
+const MAX_FUNCTION_CALLS = 5;
 
 interface GeminiProviderOptions {
   model?: string | null;
@@ -30,47 +37,177 @@ export class GeminiProvider implements LLMProvider {
     this.model = client.getGenerativeModel({
       model: modelName,
       systemInstruction: buildSystemPrompt(),
+      tools: [{ functionDeclarations: buildFunctionDeclarations() }],
     });
   }
 
   async generateTurn(input: GenerateTurnInput): Promise<LLMGameTurn> {
     const prompt = buildUserPrompt(input);
 
-    const result = await this.model.generateContent({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: prompt }],
-        },
-      ],
+    const chat = this.model.startChat({
       generationConfig: {
-        responseMimeType: "application/json",
         temperature: input.isInitial ? 0.6 : 0.8,
         topP: 0.9,
         maxOutputTokens: 2048,
       },
     });
 
-    const response = result.response;
-    const candidates = response.candidates ?? [];
+    let iterationCount = 0;
+    let currentMessage: any = prompt;
 
-    const raw = candidates
-      .flatMap((candidate) => candidate.content?.parts ?? [])
-      .map((part) => {
-        if ("text" in part && typeof part.text === "string") {
-          return part.text;
+    while (iterationCount < MAX_FUNCTION_CALLS) {
+      iterationCount++;
+
+      const result = await chat.sendMessage(currentMessage);
+      const response = result.response;
+
+      const functionCalls = response.functionCalls();
+
+      if (!functionCalls || functionCalls.length === 0) {
+        const text = response.text();
+        if (!text) {
+          console.error("Gemini вернул пустой ответ:", JSON.stringify(response, null, 2));
+          throw new Error("Gemini вернул пустой ответ");
         }
-        return "";
-      })
-      .join("\n")
-      .trim();
+        return parseGameTurn(text);
+      }
 
-    if (!raw) {
-      console.error("Gemini вернул пустой ответ:", JSON.stringify(response, null, 2));
-      throw new Error("Gemini вернул пустой ответ");
+      const functionResponses = functionCalls.map((call) => {
+        console.log(`[Gemini Tool Call] ${call.name}:`, call.args);
+
+        const functionResult = executeFunctionCall(call.name, call.args, input);
+
+        console.log(`[Gemini Tool Result] ${call.name}:`, functionResult);
+
+        return {
+          functionResponse: {
+            name: call.name,
+            response: functionResult,
+          },
+        };
+      });
+
+      currentMessage = functionResponses;
     }
 
-    return parseGameTurn(raw);
+    throw new Error("Превышен лимит вызовов функций");
+  }
+}
+
+function buildFunctionDeclarations() {
+  return [
+    {
+      name: "get_near_locations",
+      description: "Получить локации, непосредственно связанные с текущей локацией игрока. Используй это для проверки прямых соседей.",
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {} as Record<string, any>,
+      },
+    },
+    {
+      name: "find_location_by_name",
+      description: "Найти локацию на всей карте мира по приблизительному названию. Возвращает список подходящих локаций с оценкой совпадения.",
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          raw_name: {
+            type: SchemaType.STRING,
+            description: "Название места, куда предположительно хочет пойти игрок",
+          },
+        } as Record<string, any>,
+        required: ["raw_name"],
+      },
+    },
+    {
+      name: "get_route",
+      description: "Построить маршрут от текущей локации к целевой. Возвращает последовательность локаций для перемещения.",
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          target_location_name: {
+            type: SchemaType.STRING,
+            description: "Точное название целевой локации",
+          },
+        } as Record<string, any>,
+        required: ["target_location_name"],
+      },
+    },
+  ];
+}
+
+function executeFunctionCall(
+  functionName: string,
+  args: Record<string, any>,
+  input: GenerateTurnInput
+): any {
+  const { world, locationContext } = input;
+  const { currentLocation } = locationContext;
+
+  switch (functionName) {
+    case "get_near_locations": {
+      const nearLocations = getNearLocations(currentLocation.id, world.graph);
+      return {
+        count: nearLocations.length,
+        locations: nearLocations.map((loc) => ({
+          name: loc.name,
+          description: loc.mapDescription || "",
+        })),
+      };
+    }
+
+    case "find_location_by_name": {
+      const rawName = args.raw_name as string;
+      if (!rawName) {
+        return { error: "Не указано название для поиска" };
+      }
+
+      const matches = findLocationByName(rawName, world.graph);
+      return {
+        found: matches.length > 0,
+        matches: matches.map((match) => ({
+          name: match.name,
+          description: match.mapDescription,
+          similarity: Math.round(match.similarity * 100) + "%",
+        })),
+      };
+    }
+
+    case "get_route": {
+      const targetName = args.target_location_name as string;
+      if (!targetName) {
+        return { error: "Не указана целевая локация" };
+      }
+
+      const targetLocation = Object.values(world.graph).find(
+        (loc) => loc.locationName === targetName
+      );
+
+      if (!targetLocation) {
+        return { error: `Локация "${targetName}" не найдена на карте` };
+      }
+
+      const route = getRoute(currentLocation.id, targetLocation.id, world.graph);
+
+      if (!route.exists) {
+        return {
+          exists: false,
+          message: "Маршрут не найден. Локации не связаны.",
+        };
+      }
+
+      return {
+        exists: true,
+        distance: route.totalDistance,
+        path: route.path.map((loc) => ({
+          name: loc.name,
+          description: loc.mapDescription,
+        })),
+        formatted: formatRoute(route),
+      };
+    }
+
+    default:
+      return { error: `Неизвестная функция: ${functionName}` };
   }
 }
 
@@ -82,22 +219,32 @@ function buildSystemPrompt(): string {
     "Одновременно формируй сухое, краткое `mapDescription` — 1‑2 предложения без эмоциональной окраски, чтобы хранить его в карте мира.",
     "Если игрок уже бывал в локации, используй сохранённый `mapDescription` как основу, но можешь варьировать литературную подачу в `narration`.",
     "Если локация новая, придумай `mapDescription`, предметы и потенциальные выходы, логично продолжая мир.",
+    "",
+    "NAVIGATION TOOLS:",
+    "У тебя есть инструменты для работы с картой:",
+    "- get_near_locations() - показывает соседние локации",
+    "- find_location_by_name(raw_name) - ищет локацию по названию",
+    "- get_route(target_location_name) - строит маршрут",
+    "",
+    "PRIORITY LOGIC:",
+    "0. Определи куда хочет игрок (raw_name)",
+    "1. Вызови get_near_locations() - если raw_name среди них, переведи туда",
+    "2. Если нет - вызови find_location_by_name(raw_name)",
+    "3. Если нашлась - вызови get_route(имя_локации) и опиши маршрут",
+    "4. Если не нашлась - реши создать новую или отказать",
+    "",
     "Всегда возвращай ответ строго в формате JSON без дополнительного текста.",
   ].join("\n");
 }
 
 function buildUserPrompt(input: GenerateTurnInput): string {
   const { world, character, playerMessage, history, locationContext, isInitial } = input;
-  const { currentLocation, knownLocations, lastActionReminder } = locationContext;
-
-  const worldRegistry = buildWorldRegistry(currentLocation.id, knownLocations);
+  const { currentLocation, lastActionReminder } = locationContext;
 
   const recentHistory = history
     .slice(-HISTORY_LIMIT)
     .map((entry) => `${entry.author === "player" ? "Игрок" : "ГМ"}: ${entry.message}`)
     .join("\n");
-
-  const currentConnections = formatConnections(currentLocation, knownLocations);
 
   const reminderInstruction = lastActionReminder
     ? `Помни: последнее заметное действие игрока здесь — "${lastActionReminder.playerMessage}". Тогда произошло: "${lastActionReminder.gmResponse}". Учитывай последствия.`
@@ -118,11 +265,6 @@ function buildUserPrompt(input: GenerateTurnInput): string {
       : "пуст"
     }`,
     `Текущая локация героя: ${currentLocation.locationName}.`,
-    "Правило имён: если упоминаешь уже известную локацию, используй её точное название из раздела \"Карта известных локаций\" без добавления новых слов или уточнений.",
-    currentConnections
-      ? `Из этой локации видны пути: ${currentConnections.join("; ")}.`
-      : "Из этой локации пока не выявлено путей.",
-    worldRegistry ? `Карта известных локаций:\n${worldRegistry}` : "Это единственная исследованная локация сейчас.",
     recentHistory ? `Недавняя история:\n${recentHistory}` : "История пуста, это начало приключения.",
     reminderInstruction,
     playerInstruction,
@@ -206,52 +348,3 @@ function extractJson(text: string): string {
 
   return text.trim();
 }
-
-function findLocationName(locations: GenerateTurnInput["locationContext"]["knownLocations"], id: string): string | undefined {
-  return locations.find((location) => location.id === id)?.locationName;
-}
-
-type CurrentLocation = GenerateTurnInput["locationContext"]["currentLocation"];
-type KnownLocation = GenerateTurnInput["locationContext"]["knownLocations"][number];
-
-function getMapDescription(location: CurrentLocation | KnownLocation): string {
-  const candidate = (location as { mapDescription?: string | null }).mapDescription;
-  if (candidate && candidate.trim().length > 0) {
-    return candidate.trim();
-  }
-
-  return location.description ?? "Описание отсутствует";
-}
-
-function buildWorldRegistry(currentLocationId: string, locations: GenerateTurnInput["locationContext"]["knownLocations"]): string {
-  if (locations.length === 0) {
-    return "";
-  }
-
-  const limited = locations.slice(0, 12);
-
-  return limited
-    .map((location) => {
-      const header = `${location.locationName}${location.id === currentLocationId ? " (текущая)" : ""}`;
-      const mapDesc = getMapDescription(location);
-      const exits = formatConnections(location, locations)
-        .map((entry) => `    - ${entry}`)
-        .join("\n");
-
-      return [`• ${header}`, `  Описание: ${mapDesc}`, exits ? `  Пути:\n${exits}` : "  Пути: (нет данных)"].join("\n");
-    })
-    .join("\n\n");
-}
-
-function formatConnections(location: CurrentLocation | KnownLocation, knownLocations: GenerateTurnInput["locationContext"]["knownLocations"]): string[] {
-  if (!location.connections.length) {
-    return [];
-  }
-
-  return location.connections.map((connection) => {
-    const targetName = findLocationName(knownLocations, connection.targetId) ?? "Неизвестно";
-    const label = connection.label?.trim() || DEFAULT_EXIT_LABEL;
-    return `${label} ${targetName}`;
-  });
-}
-

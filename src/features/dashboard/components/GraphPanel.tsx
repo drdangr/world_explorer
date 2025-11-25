@@ -390,10 +390,28 @@ export function GraphPanel() {
               saveViewport(viewport);
             }
           }
+        } else if (change.type === "remove" && currentWorld) {
+          // Handle node deletion
+          const nodeId = change.id;
+
+          if (nodeId === currentWorld.entryLocationId) {
+            console.warn("Cannot delete entry location");
+            return;
+          }
+
+          const newGraph = { ...currentWorld.graph };
+          delete newGraph[nodeId];
+
+          // Remove connections to this node
+          Object.values(newGraph).forEach((node) => {
+            node.connections = node.connections.filter((conn) => conn.targetId !== nodeId);
+          });
+
+          updateWorld(currentWorld.id, { graph: newGraph });
         }
       });
     },
-    [savePositions, saveViewport],
+    [savePositions, saveViewport, currentWorld, updateWorld],
   );
 
   const onInit = useCallback((instance: ReactFlowInstance) => {
@@ -523,6 +541,10 @@ export function GraphPanel() {
           });
 
           await updateWorld(currentWorld.id, { graph: newGraph });
+
+          // Update local flowNodes state to remove the deleted node
+          setFlowNodes((prev) => prev.filter((node) => node.id !== nodeId));
+          setFlowEdges((prev) => prev.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
         }
       }
     },

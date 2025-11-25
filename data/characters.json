@@ -15,7 +15,7 @@
         {
           "id": "fdf71210-0fd1-475f-b792-c84b5b63cbc1",
           "name": "серебряный снитч",
-          "description": "Маленький волшебный мячик для квиддича, возможно, имеющий ценность.",
+          "description": "Маленький волшебный мячик для квиддича, возможно, имеющий какую-то ценность.",
           "portable": true,
           "ownerCharacterId": "9fdd7aba-8051-4e59-bba9-96544966d709"
         },
@@ -28,9 +28,9 @@
         }
       ],
       "currentWorldId": "42d2fb0c-9c3a-4da3-9b95-8d9f1e695f9e",
-      "currentLocationId": "cc26f8f4-fc74-4563-ae2e-1f60e1d4e1e4",
+      "currentLocationId": "052f5426-5713-4cda-9425-dd0aff3c1cd3",
       "lastSessionFile": "session__9fdd7aba-8051-4e59-bba9-96544966d709__42d2fb0c-9c3a-4da3-9b95-8d9f1e695f9e__20251124T225119579.json",
-      "lastSessionEntryId": "7ef5025b-e446-43f7-be59-83f538d225f6"
+      "lastSessionEntryId": "7bc8ef1c-cdab-42da-ab72-134d0f6a8263"
     }
   ]
 }
