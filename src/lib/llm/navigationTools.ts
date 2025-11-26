@@ -50,43 +50,82 @@ export function getNearLocations(
 }
 
 /**
+ * Normalize text for fuzzy matching (handle Ukrainian/Russian variants)
+ */
+function normalizeText(text: string): string {
+    return text
+        .toLowerCase()
+        .trim()
+        // Ukrainian -> Russian normalization
+        .replace(/і/g, 'и')
+        .replace(/ї/g, 'и')
+        .replace(/є/g, 'е')
+        .replace(/ґ/g, 'г');
+}
+
+/**
+ * Calculate similarity between search term and location
+ */
+function calculateSimilarity(
+    searchTerm: string,
+    locationName: string,
+    description: string
+): number {
+    // Exact match
+    if (locationName === searchTerm) {
+        return 1.0;
+    }
+
+    // Starts with
+    if (locationName.startsWith(searchTerm)) {
+        return 0.9;
+    }
+
+    // Contains
+    if (locationName.includes(searchTerm)) {
+        return 0.8;
+    }
+
+    // In description
+    if (description.includes(searchTerm)) {
+        return 0.6;
+    }
+
+    // Word-based matching
+    const words = searchTerm.split(/\s+/);
+    const matchedWords = words.filter(
+        (word) => locationName.includes(word) || description.includes(word)
+    );
+
+    if (matchedWords.length === 0) {
+        return 0;
+    }
+
+    return (matchedWords.length / words.length) * 0.5;
+}
+
+/**
  * Find location by approximate name using fuzzy matching
  */
 export function findLocationByName(
     rawName: string,
     graph: World["graph"]
 ): LocationMatch[] {
-    const searchTerm = rawName.toLowerCase().trim();
+    const searchTerm = normalizeText(rawName);
     const allLocations = Object.values(graph);
 
     const matches: LocationMatch[] = [];
 
     for (const location of allLocations) {
-        const locationName = location.locationName.toLowerCase();
-        const description = (location.mapDescription || location.description || "").toLowerCase();
+        const locationName = normalizeText(location.locationName);
+        const description = normalizeText(location.mapDescription || location.description || "");
 
-        let similarity = 0;
-
-        if (locationName === searchTerm) {
-            similarity = 1.0;
-        } else if (locationName.startsWith(searchTerm)) {
-            similarity = 0.9;
-        } else if (locationName.includes(searchTerm)) {
-            similarity = 0.8;
-        } else if (description.includes(searchTerm)) {
-            similarity = 0.6;
-        } else {
-            const words = searchTerm.split(/\s+/);
-            const matchedWords = words.filter(
-                (word) => locationName.includes(word) || description.includes(word)
-            );
-            similarity = matchedWords.length / words.length * 0.5;
-        }
+        const similarity = calculateSimilarity(searchTerm, locationName, description);
 
         if (similarity > 0.3) {
             matches.push({
                 id: location.id,
-                name: location.locationName,
+                name: location.locationName, // Return original name, not normalized
                 mapDescription: location.mapDescription || location.description || "",
                 similarity,
             });

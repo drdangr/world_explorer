@@ -40,7 +40,10 @@ export function Sidebar() {
   const [worldModal, setWorldModal] = useState<WorldModalState | null>(null);
   const [isCharacterModalOpen, setCharacterModalOpen] = useState(false);
   const [inventoryExpanded, setInventoryExpanded] = useState(true);
+  const [toolLogsExpanded, setToolLogsExpanded] = useState(false);
   const [sessionModal, setSessionModal] = useState<{ worldId: string; sessions: SessionMeta[] } | null>(null);
+
+  const latestToolLogs = useGameStore((state) => state.latestToolLogs);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -150,6 +153,82 @@ export function Sidebar() {
       // Fallback to default behavior
       actions.selectWorld(worldId);
     }
+  };
+
+  const formatToolArgs = (args: Record<string, any>): string => {
+    const entries = Object.entries(args);
+    if (entries.length === 0) return "—";
+    return entries.map(([key, value]) => `${key}: "${value}"`).join(", ");
+  };
+
+  const formatToolResult = (toolName: string, result: any): React.ReactElement => {
+    if (!result) return <span className="text-slate-500">—</span>;
+
+    switch (toolName) {
+      case "get_near_locations":
+        if (result.locations && Array.isArray(result.locations)) {
+          return (
+            <>
+              <p className="font-medium text-emerald-400">📍 Найдено: {result.count}</p>
+              <ul className="mt-1 ml-2 space-y-1">
+                {result.locations.map((loc: any, i: number) => (
+                  <li key={i} className="text-slate-300">
+                    • {loc.name}
+                  </li>
+                ))}
+              </ul>
+            </>
+          );
+        }
+        break;
+
+      case "find_location_by_name":
+        if (result.matches && Array.isArray(result.matches)) {
+          return (
+            <>
+              <p className="font-medium text-emerald-400">
+                🔍 Найдено кандидатов: {result.matches.length}
+              </p>
+              <ul className="mt-1 ml-2 space-y-1">
+                {result.matches.map((match: any, i: number) => (
+                  <li key={i} className="text-slate-300">
+                    • {match.name} <span className="text-emerald-300">({match.similarity})</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          );
+        }
+        break;
+
+      case "get_route":
+        if (result.exists && result.path && Array.isArray(result.path)) {
+          return (
+            <>
+              <p className="font-medium text-emerald-400">
+                🛤️ Маршрут ({result.distance} шаг{result.distance !== 1 ? "ов" : ""}):
+              </p>
+              <ol className="mt-1 ml-2 space-y-1">
+                {result.path.map((loc: any, i: number) => (
+                  <li key={i} className="text-slate-300">
+                    {i + 1}. {loc.name}
+                  </li>
+                ))}
+              </ol>
+            </>
+          );
+        } else if (result.error) {
+          return <span className="text-red-400">❌ {result.error}</span>;
+        }
+        break;
+    }
+
+    // Fallback - show JSON
+    return (
+      <pre className="text-[9px] text-slate-400 overflow-x-auto">
+        {JSON.stringify(result, null, 2)}
+      </pre>
+    );
   };
 
   const handleSessionSelect = (sessionId: string) => {
@@ -268,6 +347,42 @@ export function Sidebar() {
                       ))}
                     </ul>
                   )}
+                </div>
+              )}
+            </div>
+          )}
+          {latestToolLogs && latestToolLogs.length > 0 && (
+            <div className="border-t border-slate-800 px-4 py-3">
+              <button
+                type="button"
+                onClick={() => setToolLogsExpanded((prev) => !prev)}
+                className="flex w-full items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white"
+              >
+                <span>Логи инструментов</span>
+                <ChevronIcon className={`h-3 w-3 transition-transform ${toolLogsExpanded ? 'rotate-180' : ''}`} />
+              </button>
+              {toolLogsExpanded && (
+                <div className="mt-3">
+                  <ul className="flex flex-col gap-2">
+                    {latestToolLogs.map((log, index) => (
+                      <li
+                        key={index}
+                        className="rounded border border-slate-800 bg-slate-950/60 px-3 py-2"
+                      >
+                        <p className="text-xs font-medium text-emerald-300">{log.toolName}</p>
+                        {log.args && Object.keys(log.args).length > 0 && (
+                          <p className="mt-1 text-[10px] text-slate-400">
+                            📥 {formatToolArgs(log.args)}
+                          </p>
+                        )}
+                        {log.result && (
+                          <div className="mt-2 text-[10px] text-slate-300">
+                            {formatToolResult(log.toolName, log.result)}
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>

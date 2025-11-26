@@ -53,6 +53,7 @@ export class GeminiProvider implements LLMProvider {
 
     let iterationCount = 0;
     let currentResponse: GenerateContentResponse | null = null;
+    const toolLogs: any[] = []; // Track tool executions
 
     try {
       // Send initial message
@@ -101,6 +102,14 @@ export class GeminiProvider implements LLMProvider {
 
           console.log(`[Gemini Tool Result] ${functionName}:`, functionResult);
 
+          // Log this tool execution
+          toolLogs.push({
+            toolName: functionName,
+            args: fc.args || {},
+            result: functionResult,
+            timestamp: Date.now(),
+          });
+
           // Send function response back
           try {
             currentResponse = await chat.sendMessage({
@@ -127,13 +136,19 @@ export class GeminiProvider implements LLMProvider {
         // No more function calls, get the text response
         const textPart = parts.find((p) => (p as any).text);
         if (textPart && (textPart as any).text) {
-          return parseGameTurn((textPart as any).text);
+          return {
+            ...parseGameTurn((textPart as any).text),
+            toolLogs,
+          };
         }
 
         // Try to get text from response
         const text = (currentResponse as any).text;
         if (text) {
-          return parseGameTurn(text);
+          return {
+            ...parseGameTurn(text),
+            toolLogs,
+          };
         }
 
         console.error("[Gemini] No text or function call in response:", JSON.stringify(currentResponse, null, 2));
@@ -157,13 +172,16 @@ function buildFunctionDeclarations(): FunctionDeclaration[] {
     },
     {
       name: "find_location_by_name",
-      description: "Найти локацию на всей карте мира по приблизительному названию. Возвращает список подходящих локаций с оценкой совпадения.",
+      description: `Найти локацию на всей карте мира по приблизительному названию. 
+Возвращает список подходящих локаций с оценкой совпадения (similarity от 0% до 100%).
+ВАЖНО: Передавай название максимально близко к тому, что сказал игрок.
+После получения результатов используй ТОЧНОЕ название (поле "name") из лучшего кандидата для get_route.`,
       parameters: {
         type: Type.OBJECT,
         properties: {
           raw_name: {
             type: Type.STRING,
-            description: "Название места, куда предположительно хочет пойти игрок",
+            description: "Название места, которое упомянул игрок (передай как можно точнее)",
           },
         },
         required: ["raw_name"],
@@ -324,17 +342,23 @@ function buildSystemPrompt(): string {
 Ты ДОЛЖЕН использовать инструменты для навигации.
 
 ПРАВИЛА НАВИГАЦИИ:
-1. Если игрок называет локацию, которой нет в списке выходов - НЕ говори "я не знаю где это".
-2. ВМЕСТО ЭТОГО: вызови find_location_by_name.
-3. Если локация найдена - вызови get_route.
-4. Если маршрут найден - опиши путешествие через промежуточные локации.
+1. Если игрок называет локацию для перемещения:
+   a) Передай в find_location_by_name максимально точное название, которое упомянул игрок
+   b) Получи список кандидатов с оценкой совпадения (similarity)
+   c) Если есть кандидат с similarity >= 70%, используй его ТОЧНОЕ название (name) для get_route
+   d) Если лучший кандидат имеет similarity < 70%, спроси игрока уточнить
+
+2. НИКОГДА не придумывай свои варианты названий - используй только то, что вернул find_location_by_name
+
+3. Если маршрут найден - опиши путешествие через промежуточные локации
 
 ПРИМЕР:
-Игрок: "Иду в Библиотеку"
-ГМ: (вызывает get_near_locations) -> Библиотеки нет рядом.
-ГМ: (вызывает find_location_by_name "Библиотека") -> Найдена "Старая Библиотека".
-ГМ: (вызывает get_route "Старая Библиотека") -> Маршрут: Холл -> Коридор -> Библиотека.
-ГМ: (Генерирует ответ): "Ты проходишь через длинный коридор и оказываешься перед дверями Старой Библиотеки..."
+Игрок: "Хочу попасть на Дарницу"
+ГМ: (вызывает find_location_by_name "Дарница")
+    -> Результат: [{"name": "Станция Дарница", "similarity": "80%"}]
+ГМ: (вызывает get_route "Станция Дарница") // Использует ТОЧНОЕ название!
+    -> Маршрут: Холл -> Коридор -> Станция Дарница
+ГМ: (Генерирует ответ): "Ты проходишь через..."
 `;
 }
 

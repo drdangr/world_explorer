@@ -14,6 +14,7 @@ export interface GameState {
     suggestions: string[];
     isProcessingTurn: boolean;
     forceNewSession: boolean;
+    latestToolLogs: any[]; // Tool execution logs from last turn
 
     // UI/Shared Slice
     isInitializing: boolean;

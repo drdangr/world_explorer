@@ -19,6 +19,7 @@ const initialState: Omit<GameState, "actions"> = {
   isMutating: false,
   error: null,
   forceNewSession: false,
+  latestToolLogs: [],
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({

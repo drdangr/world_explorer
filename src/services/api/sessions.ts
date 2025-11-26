@@ -8,6 +8,7 @@ export interface SessionResponse {
         entries: SessionEntry[];
     };
     suggestions?: string[];
+    toolLogs?: any[];
 }
 
 export interface SessionLogResponse {

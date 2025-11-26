@@ -80,6 +80,7 @@ export async function POST(request: Request) {
         entries: updatedLog.entries,
       },
       suggestions: parsedTurn.suggestions,
+      toolLogs: parsedTurn.toolLogs || [],
     });
   } catch (error) {
     console.error("Ошибка обработки запроса сессии", error);

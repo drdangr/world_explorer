@@ -38,6 +38,13 @@ export const LocationPayloadSchema = z.object({
 
 export type LocationPayload = z.infer<typeof LocationPayloadSchema>;
 
+export interface ToolCallLog {
+  toolName: string;
+  args: Record<string, any>;
+  result: any;
+  timestamp: number;
+}
+
 export const LLMGameTurnSchema = z.object({
   narration: z
     .string()
@@ -57,6 +64,7 @@ export const LLMGameTurnSchema = z.object({
       items: z.array(ItemDescriptorSchema).default([]),
     })
     .default({ items: [] }),
+  toolLogs: z.array(z.any()).default([]),
 });
 
 export type LLMGameTurn = z.infer<typeof LLMGameTurnSchema>;

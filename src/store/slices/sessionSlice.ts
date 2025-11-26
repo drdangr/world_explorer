@@ -69,6 +69,7 @@ async function processSessionTurn(
                 characters,
                 messages: data.session.entries,
                 suggestions: data.suggestions ?? [],
+                latestToolLogs: data.toolLogs ?? [],
                 isProcessingTurn: false,
                 forceNewSession: false,
             };
