@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { GoogleGenAI, FunctionDeclaration, Type, GenerateContentResponse, Chat } from "@google/genai";
 
 import { jsonrepair } from "jsonrepair";
 
@@ -13,8 +13,7 @@ import {
 import type { GenerateTurnInput, LLMProvider } from "../provider";
 import { LLMGameTurnSchema, type LLMGameTurn } from "../types";
 
-const DEFAULT_MODEL = "gemini-1.5-pro-latest";
-const HISTORY_LIMIT = 8;
+const DEFAULT_MODEL = "gemini-2.5-flash";
 const MAX_FUNCTION_CALLS = 5;
 
 interface GeminiProviderOptions {
@@ -24,97 +23,149 @@ interface GeminiProviderOptions {
 export class GeminiProvider implements LLMProvider {
   readonly name = "gemini";
 
-  private readonly model;
+  private readonly ai: GoogleGenAI;
+  private readonly modelName: string;
 
   constructor(apiKey: string, options: GeminiProviderOptions = {}) {
     if (!apiKey) {
       throw new Error("GeminiProvider требует API ключ");
     }
 
-    const client = new GoogleGenerativeAI(apiKey);
-    const modelName = options.model?.trim() || DEFAULT_MODEL;
-
-    this.model = client.getGenerativeModel({
-      model: modelName,
-      systemInstruction: buildSystemPrompt(),
-      tools: [{ functionDeclarations: buildFunctionDeclarations() }],
-    });
+    this.ai = new GoogleGenAI({ apiKey });
+    this.modelName = options.model?.trim() || DEFAULT_MODEL;
   }
 
   async generateTurn(input: GenerateTurnInput): Promise<LLMGameTurn> {
     const prompt = buildUserPrompt(input);
 
-    const chat = this.model.startChat({
-      generationConfig: {
-        temperature: input.isInitial ? 0.6 : 0.8,
-        topP: 0.9,
-        maxOutputTokens: 2048,
+    const chat = this.ai.chats.create({
+      model: this.modelName,
+      config: {
+        systemInstruction: buildSystemPrompt(),
+        tools: [{ functionDeclarations: buildFunctionDeclarations() }],
+        toolConfig: {
+          functionCallingConfig: {
+            mode: "AUTO" as any, // Allow model to decide between function and text
+          },
+        },
       },
     });
 
     let iterationCount = 0;
-    let currentMessage: any = prompt;
+    let currentResponse: GenerateContentResponse | null = null;
+
+    try {
+      // Send initial message
+      console.log("[Gemini] Sending initial message...");
+      currentResponse = await chat.sendMessage({ message: prompt });
+    } catch (error) {
+      console.error("[Gemini] Error sending initial message:", error);
+      throw error;
+    }
 
     while (iterationCount < MAX_FUNCTION_CALLS) {
       iterationCount++;
 
-      const result = await chat.sendMessage(currentMessage);
-      const response = result.response;
+      // console.log("[Gemini] Response received:", JSON.stringify(currentResponse, null, 2));
 
-      const functionCalls = response.functionCalls();
-
-      if (!functionCalls || functionCalls.length === 0) {
-        const text = response.text();
-        if (!text) {
-          console.error("Gemini вернул пустой ответ:", JSON.stringify(response, null, 2));
-          throw new Error("Gemini вернул пустой ответ");
-        }
-        return parseGameTurn(text);
+      const candidates = currentResponse.candidates;
+      if (!candidates || candidates.length === 0) {
+        console.error("[Gemini] No candidates in response");
+        throw new Error("Gemini вернул пустой ответ - нет candidates");
       }
 
-      const functionResponses = functionCalls.map((call) => {
-        console.log(`[Gemini Tool Call] ${call.name}:`, call.args);
+      const candidate = candidates[0];
+      if (!candidate.content) {
+        console.error("[Gemini] No content in candidate:", JSON.stringify(candidate, null, 2));
+        throw new Error("Gemini вернул пустой ответ - нет content");
+      }
 
-        const functionResult = executeFunctionCall(call.name, call.args, input);
+      const parts = candidate.content.parts;
+      if (!parts || parts.length === 0) {
+        console.error("[Gemini] No parts in content");
+        throw new Error("Gemini вернул пустой ответ - нет parts");
+      }
 
-        console.log(`[Gemini Tool Result] ${call.name}:`, functionResult);
+      let functionCallFound = false;
 
-        return {
-          functionResponse: {
-            name: call.name,
-            response: functionResult,
-          },
-        };
-      });
+      for (const part of parts) {
+        if ((part as any).functionCall) {
+          functionCallFound = true;
+          const fc = (part as any).functionCall;
+          const functionName = fc.name;
+          const callId = fc.id || "unknown-id";
 
-      currentMessage = functionResponses;
+          console.log(`[Gemini Tool Call] ${functionName}:`, fc.args);
+
+          const functionResult = executeFunctionCall(functionName, fc.args || {}, input);
+
+          console.log(`[Gemini Tool Result] ${functionName}:`, functionResult);
+
+          // Send function response back
+          try {
+            currentResponse = await chat.sendMessage({
+              message: [
+                {
+                  functionResponse: {
+                    name: functionName,
+                    response: functionResult,
+                    id: callId,
+                  },
+                },
+              ],
+            });
+          } catch (error) {
+            console.error(`[Gemini] Error sending tool response for ${functionName}:`, error);
+            throw error;
+          }
+
+          break; // Process one function at a time
+        }
+      }
+
+      if (!functionCallFound) {
+        // No more function calls, get the text response
+        const textPart = parts.find((p) => (p as any).text);
+        if (textPart && (textPart as any).text) {
+          return parseGameTurn((textPart as any).text);
+        }
+
+        // Try to get text from response
+        const text = (currentResponse as any).text;
+        if (text) {
+          return parseGameTurn(text);
+        }
+
+        console.error("[Gemini] No text or function call in response:", JSON.stringify(currentResponse, null, 2));
+        throw new Error("Gemini вернул пустой ответ");
+      }
     }
 
     throw new Error("Превышен лимит вызовов функций");
   }
 }
 
-function buildFunctionDeclarations() {
+function buildFunctionDeclarations(): FunctionDeclaration[] {
   return [
     {
       name: "get_near_locations",
       description: "Получить локации, непосредственно связанные с текущей локацией игрока. Используй это для проверки прямых соседей.",
       parameters: {
-        type: SchemaType.OBJECT,
-        properties: {} as Record<string, any>,
+        type: Type.OBJECT,
+        properties: {},
       },
     },
     {
       name: "find_location_by_name",
       description: "Найти локацию на всей карте мира по приблизительному названию. Возвращает список подходящих локаций с оценкой совпадения.",
       parameters: {
-        type: SchemaType.OBJECT,
+        type: Type.OBJECT,
         properties: {
           raw_name: {
-            type: SchemaType.STRING,
+            type: Type.STRING,
             description: "Название места, куда предположительно хочет пойти игрок",
           },
-        } as Record<string, any>,
+        },
         required: ["raw_name"],
       },
     },
@@ -122,13 +173,13 @@ function buildFunctionDeclarations() {
       name: "get_route",
       description: "Построить маршрут от текущей локации к целевой. Возвращает последовательность локаций для перемещения.",
       parameters: {
-        type: SchemaType.OBJECT,
+        type: Type.OBJECT,
         properties: {
           target_location_name: {
-            type: SchemaType.STRING,
+            type: Type.STRING,
             description: "Точное название целевой локации",
           },
-        } as Record<string, any>,
+        },
         required: ["target_location_name"],
       },
     },
@@ -191,15 +242,15 @@ function executeFunctionCall(
       if (!route.exists) {
         return {
           exists: false,
-          message: "Маршрут не найден. Локации не связаны.",
+          error: "Маршрут не найден",
         };
       }
 
       return {
         exists: true,
-        distance: route.totalDistance,
+        distance: route.path.length - 1,
         path: route.path.map((loc) => ({
-          name: loc.name,
+          name: loc.locationName,
           description: loc.mapDescription,
         })),
         formatted: formatRoute(route),
@@ -207,144 +258,93 @@ function executeFunctionCall(
     }
 
     default:
-      return { error: `Неизвестная функция: ${functionName}` };
+      return { error: `Функция ${functionName} не найдена` };
   }
-}
-
-function buildSystemPrompt(): string {
-  return [
-    "Ты выступаешь в роли Гейм-мастера интерактивного приключения.",
-    "Опиши мир так, будто наблюдаешь его глазами персонажа игрока, соблюдая заданные сеттинг, атмосферу и жанр.",
-    "В `narration` используй художественный стиль от первого лица: запахи, звуки, ощущения, реакции героя.",
-    "Одновременно формируй сухое, краткое `mapDescription` — 1‑2 предложения без эмоциональной окраски, чтобы хранить его в карте мира.",
-    "Если игрок уже бывал в локации, используй сохранённый `mapDescription` как основу, но можешь варьировать литературную подачу в `narration`.",
-    "Если локация новая, придумай `mapDescription`, предметы и потенциальные выходы, логично продолжая мир.",
-    "",
-    "NAVIGATION TOOLS:",
-    "У тебя есть инструменты для работы с картой:",
-    "- get_near_locations() - показывает соседние локации",
-    "- find_location_by_name(raw_name) - ищет локацию по названию",
-    "- get_route(target_location_name) - строит маршрут",
-    "",
-    "PRIORITY LOGIC:",
-    "0. Определи куда хочет игрок (raw_name)",
-    "1. Вызови get_near_locations() - если raw_name среди них, переведи туда",
-    "2. Если нет - вызови find_location_by_name(raw_name)",
-    "3. Если нашлась - вызови get_route(имя_локации) и опиши маршрут",
-    "4. Если не нашлась - реши создать новую или отказать",
-    "",
-    "Всегда возвращай ответ строго в формате JSON без дополнительного текста.",
-  ].join("\n");
 }
 
 function buildUserPrompt(input: GenerateTurnInput): string {
   const { world, character, playerMessage, history, locationContext, isInitial } = input;
-  const { currentLocation, lastActionReminder } = locationContext;
+  const { currentLocation, knownLocations, lastActionReminder } = locationContext;
 
-  const recentHistory = history
-    .slice(-HISTORY_LIMIT)
-    .map((entry) => `${entry.author === "player" ? "Игрок" : "ГМ"}: ${entry.message}`)
-    .join("\n");
+  let prompt = `
+Твоя роль: Гейм-мастер (ГМ) в текстовой ролевой игре.
+Жанр: ${world.genre}
+Сеттинг: ${world.setting}
+Атмосфера: ${world.atmosphere}
 
-  const reminderInstruction = lastActionReminder
-    ? `Помни: последнее заметное действие игрока здесь — "${lastActionReminder.playerMessage}". Тогда произошло: "${lastActionReminder.gmResponse}". Учитывай последствия.`
-    : null;
+Текущее состояние:
+- Игрок: ${character.name}
+- Локация: ${currentLocation.locationName} (${currentLocation.description})
+- Окружение: ${knownLocations.map((l) => l.locationName).join(", ")}
+`;
 
-  const playerInstruction = isInitial
-    ? "Это первый ход. Опиши вступление в центральную локацию, задай атмосферу и отметь хотя бы один возможный путь."
-    : `Игрок сообщил: "${playerMessage}". Проанализируй это действие, опиши результат и при необходимости расширь мир.`;
+  if (lastActionReminder) {
+    prompt += `\nНапоминание о последнем действии: ${JSON.stringify(lastActionReminder)}\n`;
+  }
 
-  return [
-    "Установки мира и героя:",
-    `- Сеттинг: ${world.setting}`,
-    `- Атмосфера: ${world.atmosphere}`,
-    `- Жанр: ${world.genre}`,
-    `- Персонаж: ${character.name}. ${character.description}`,
-    `- Инвентарь: ${character.inventory.length > 0
-      ? character.inventory.map((item) => `${item.name} (${item.description})`).join(", ")
-      : "пуст"
-    }`,
-    `Текущая локация героя: ${currentLocation.locationName}.`,
-    recentHistory ? `Недавняя история:\n${recentHistory}` : "История пуста, это начало приключения.",
-    reminderInstruction,
-    playerInstruction,
-    JSON_FORMAT_INSTRUCTIONS,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-}
+  prompt += `\nИстория последних ходов:\n`;
+  history.forEach((entry) => {
+    prompt += `- [${entry.author}]: ${entry.message}\n`;
+  });
 
-const JSON_FORMAT_INSTRUCTIONS = `Форматируй ответ строго в JSON (без текста до или после). Структура:
+  prompt += `\nСообщение игрока: "${playerMessage}"\n`;
+
+  prompt += `
+Твоя задача:
+1. Проанализировать сообщение игрока.
+2. Если игрок хочет переместиться:
+   - Сначала вызови get_near_locations() чтобы проверить соседей.
+   - Если цель среди соседей - перемести игрока.
+   - Если цель НЕ среди соседей - ОБЯЗАТЕЛЬНО вызови find_location_by_name(raw_name) чтобы найти локацию на карте.
+   - Если локация найдена далеко - вызови get_route(target_location_name).
+3. Сгенерировать ответ в формате JSON.
+
+Формат ответа (JSON):
 {
-  "narration": "описание событий для игрока",
-  "mapDescription": "краткое жёсткое описание текущей локации без эмоций",
-  "suggestions": ["краткие идеи следующих действий"],
+  "narration": "Художественное описание происходящего...",
   "playerLocation": {
-    "name": "название конечной локации, куда попал герой",
-    "mapDescription": "сухое описание для карты",
-    "description": "литературное описание для чата от 1-го лица",
-    "items": [
-      { "name": "название предмета", "description": "в чём ценность", "portable": true }
-    ],
+    "name": "Новая локация (или текущая)",
+    "mapDescription": "Краткое описание для карты",
+    "description": "Полное описание локации",
+    "items": [],
     "exits": [
-      { "name": "название соседней локации", "label": "фраза-команда (например, \\"${DEFAULT_EXIT_LABEL}\\")", "bidirectional": true }
+      { "name": "Соседняя локация 1", "bidirectional": true }
     ]
   },
-  "discoveries": [
-    {
-      "name": "новая локация или уточнённая",
-      "mapDescription": "сухое описание для карты",
-      "description": "литературное описание, если герой кратко заглянул или ощутил новинку",
-      "items": [],
-      "exits": [
-        { "name": "название потенциальной локации", "label": "фраза-команда", "bidirectional": true }
-      ]
-    }
-  ],
-  "inventory": {
-    "items": [
-      { "name": "предмет у героя", "description": "зачем полезен", "portable": true }
-    ]
-  }
-}`;
+  "suggestions": ["Вариант действия 1", "Вариант действия 2"]
+}
+`;
 
-function parseGameTurn(raw: string): LLMGameTurn {
-  const candidate = extractJson(raw);
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(candidate);
-  } catch (error) {
-    console.error("Не удалось распарсить ответ Gemini. Исходные данные:", candidate);
-
-    try {
-      parsed = JSON.parse(jsonrepair(candidate));
-    } catch (repairError) {
-      throw new Error(
-        `Gemini вернул некорректный JSON: ${(error as Error).message}; jsonrepair: ${(repairError as Error).message}`,
-      );
-    }
-  }
-
-  const result = LLMGameTurnSchema.safeParse(parsed);
-  if (!result.success) {
-    console.error("Ответ Gemini не соответствует схеме. Исходные данные:", candidate);
-    throw new Error(`Gemini прислал JSON, не соответствующий схеме: ${result.error.message}`);
-  }
-
-  return result.data;
+  return prompt;
 }
 
-function extractJson(text: string): string {
-  const fenceMatch = text.match(/```json\s*([\s\S]*?)```/i) ?? text.match(/```\s*([\s\S]*?)```/i);
-  if (fenceMatch?.[1]) {
-    return fenceMatch[1].trim();
-  }
+function buildSystemPrompt(): string {
+  return `
+Ты - опытный Гейм-мастер. Твоя задача - вести увлекательную игру, описывать мир и реагировать на действия игрока.
+Ты ДОЛЖЕН использовать инструменты для навигации.
 
-  const directMatch = text.match(/\{[\s\S]*\}/);
-  if (directMatch?.[0]) {
-    return directMatch[0];
-  }
+ПРАВИЛА НАВИГАЦИИ:
+1. Если игрок называет локацию, которой нет в списке выходов - НЕ говори "я не знаю где это".
+2. ВМЕСТО ЭТОГО: вызови find_location_by_name.
+3. Если локация найдена - вызови get_route.
+4. Если маршрут найден - опиши путешествие через промежуточные локации.
 
-  return text.trim();
+ПРИМЕР:
+Игрок: "Иду в Библиотеку"
+ГМ: (вызывает get_near_locations) -> Библиотеки нет рядом.
+ГМ: (вызывает find_location_by_name "Библиотека") -> Найдена "Старая Библиотека".
+ГМ: (вызывает get_route "Старая Библиотека") -> Маршрут: Холл -> Коридор -> Библиотека.
+ГМ: (Генерирует ответ): "Ты проходишь через длинный коридор и оказываешься перед дверями Старой Библиотеки..."
+`;
+}
+
+function parseGameTurn(text: string): LLMGameTurn {
+  try {
+    const cleaned = jsonrepair(text);
+    const parsed = JSON.parse(cleaned);
+    return LLMGameTurnSchema.parse(parsed);
+  } catch (error) {
+    console.error("Ошибка парсинга ответа LLM:", text, error);
+    throw new Error("Некорректный формат ответа от LLM");
+  }
 }

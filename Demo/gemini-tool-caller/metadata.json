@@ -1,0 +1,5 @@
+{
+  "name": "Gemini Tool Caller",
+  "description": "A test application demonstrating Gemini API function calling capabilities with a simple UI.",
+  "requestFramePermissions": []
+}

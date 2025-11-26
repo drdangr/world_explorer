@@ -190,12 +190,69 @@ function syncExits(world: World, source: LocationNode, payload: LocationPayload)
     const label = exit.label?.trim() || DEFAULT_EXIT_LABEL;
     const bidirectional = exit.bidirectional ?? true;
 
-    upsertConnection(source, target, label, bidirectional);
+    // Check if there's already a path between source and target through intermediate nodes
+    // If yes, don't add a direct connection
+    const pathExists = hasPath(world.graph, source.id, target.id, 2); // Check path with depth > 1
 
-    if (bidirectional) {
-      upsertConnection(target, source, label, bidirectional);
+    if (!pathExists) {
+      upsertConnection(source, target, label, bidirectional);
+
+      if (bidirectional) {
+        upsertConnection(target, source, label, bidirectional);
+      }
+    } else {
+      console.log(`[Navigation] Skipping direct connection ${source.locationName} → ${target.locationName}: path already exists through intermediate nodes`);
     }
   });
+}
+
+/**
+ * Check if there's a path between two nodes with minimum depth
+ * @param graph - World graph
+ * @param fromId - Source location ID
+ * @param toId - Target location ID
+ * @param minDepth - Minimum depth to consider (2 = path through at least one intermediate node)
+ * @returns true if path exists with depth >= minDepth
+ */
+function hasPath(
+  graph: Record<string, LocationNode>,
+  fromId: string,
+  toId: string,
+  minDepth: number
+): boolean {
+  if (fromId === toId) return false;
+
+  const queue: Array<{ id: string; depth: number }> = [{ id: fromId, depth: 0 }];
+  const visited = new Set<string>([fromId]);
+  const MAX_DEPTH = 7;
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+
+    if (current.depth >= MAX_DEPTH) continue;
+
+    const node = graph[current.id];
+    if (!node) continue;
+
+    for (const conn of node.connections) {
+      if (conn.targetId === toId) {
+        // Found target - check if depth meets minimum requirement
+        if (current.depth + 1 >= minDepth) {
+          return true;
+        }
+      }
+
+      if (!visited.has(conn.targetId)) {
+        visited.add(conn.targetId);
+        queue.push({
+          id: conn.targetId,
+          depth: current.depth + 1,
+        });
+      }
+    }
+  }
+
+  return false;
 }
 
 function upsertConnection(source: LocationNode, target: LocationNode, label: string, bidirectional: boolean) {

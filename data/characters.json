@@ -4,33 +4,11 @@
       "id": "9fdd7aba-8051-4e59-bba9-96544966d709",
       "name": "Тощий Пит",
       "description": "сотрудник Ночной Стражи, детектив, оборотень",
-      "inventory": [
-        {
-          "id": "75a49c35-5744-4965-aff8-fdceeb4caafc",
-          "name": "пустая бутылка из-под огневиски",
-          "description": "Стеклянная бутылка, грязная и пыльная. Можно попытаться очистить и использовать для зелий, или попытаться снять отпечатки пальцев.",
-          "portable": true,
-          "ownerCharacterId": "9fdd7aba-8051-4e59-bba9-96544966d709"
-        },
-        {
-          "id": "fdf71210-0fd1-475f-b792-c84b5b63cbc1",
-          "name": "серебряный снитч",
-          "description": "Маленький волшебный мячик для квиддича, возможно, имеющий какую-то ценность.",
-          "portable": true,
-          "ownerCharacterId": "9fdd7aba-8051-4e59-bba9-96544966d709"
-        },
-        {
-          "id": "b3b9e16d-0cbb-48a3-bcdd-77be5a0cf96a",
-          "name": "Датапад Ночной Стражи",
-          "description": "Поврежденный датапад с логотипом Ночной Стражи, найденный в кармане. Возможно, содержит полезную информацию.",
-          "portable": true,
-          "ownerCharacterId": "9fdd7aba-8051-4e59-bba9-96544966d709"
-        }
-      ],
+      "inventory": [],
       "currentWorldId": "42d2fb0c-9c3a-4da3-9b95-8d9f1e695f9e",
-      "currentLocationId": "052f5426-5713-4cda-9425-dd0aff3c1cd3",
-      "lastSessionFile": "session__9fdd7aba-8051-4e59-bba9-96544966d709__42d2fb0c-9c3a-4da3-9b95-8d9f1e695f9e__20251124T225119579.json",
-      "lastSessionEntryId": "7bc8ef1c-cdab-42da-ab72-134d0f6a8263"
+      "currentLocationId": "99290add-8cb0-4350-aa82-cbc498f0e62c",
+      "lastSessionFile": "session__9fdd7aba-8051-4e59-bba9-96544966d709__42d2fb0c-9c3a-4da3-9b95-8d9f1e695f9e__20251125T014642688.json",
+      "lastSessionEntryId": "420e6055-009c-4b68-843b-110674692c78"
     }
   ]
 }
